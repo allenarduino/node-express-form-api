@@ -1,8 +1,5 @@
 import express from 'express';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
+import { createAuthRoutes } from './auth';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +17,9 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
+
+// Auth routes
+app.use('/api/auth', createAuthRoutes());
 
 // Start server
 app.listen(PORT, () => {

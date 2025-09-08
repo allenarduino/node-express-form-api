@@ -1,10 +1,10 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { UserRepository } from '../repositories/UserRepository';
-import { ProfileRepository } from '../repositories/ProfileRepository';
-import { EmailProvider } from '../../infrastructure/email/EmailProvider';
-import { env } from '../../config/env';
+import { UserRepository } from '../domain/repositories/UserRepository';
+import { ProfileRepository } from '../domain/repositories/ProfileRepository';
+import { EmailProvider } from '../infrastructure/email/EmailProvider';
+import { env } from '../config/env';
 
 /**
  * Authentication service for user registration, verification, and login
