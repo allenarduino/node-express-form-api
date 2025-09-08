@@ -1,11 +1,11 @@
 import { PrismaClient, User } from '@prisma/client';
-import { prisma } from '../../config/prisma';
+import { prisma } from '../config/prisma';
 
 /**
- * Repository class for User entity operations
- * Provides a clean interface over Prisma User operations
+ * Authentication repository for user authentication operations
+ * Handles auth-specific database queries
  */
-export class UserRepository {
+export class AuthRepository {
     private prisma: PrismaClient;
 
     constructor(prismaClient?: PrismaClient) {
@@ -13,11 +13,11 @@ export class UserRepository {
     }
 
     /**
-     * Create a new user with the provided data
+     * Create a new user with authentication data
      * @param data - User creation data including email and passwordHash
      * @returns Promise<User> - The created user
      */
-    async create(data: {
+    async createUser(data: {
         email: string;
         passwordHash: string;
         isEmailVerified?: boolean;
@@ -74,21 +74,10 @@ export class UserRepository {
      * @param data - Partial user data to update
      * @returns Promise<User> - The updated user
      */
-    async update(id: string, data: Partial<User>): Promise<User> {
+    async updateUser(id: string, data: Partial<User>): Promise<User> {
         return this.prisma.user.update({
             where: { id },
             data,
-        });
-    }
-
-    /**
-     * Delete a user by their ID
-     * @param id - The user ID to delete
-     * @returns Promise<User> - The deleted user
-     */
-    async delete(id: string): Promise<User> {
-        return this.prisma.user.delete({
-            where: { id },
         });
     }
 
@@ -97,7 +86,7 @@ export class UserRepository {
      * @param email - The email address to check
      * @returns Promise<boolean> - True if user exists, false otherwise
      */
-    async existsByEmail(email: string): Promise<boolean> {
+    async userExistsByEmail(email: string): Promise<boolean> {
         const user = await this.prisma.user.findUnique({
             where: { email },
             select: { id: true },
@@ -106,16 +95,40 @@ export class UserRepository {
     }
 
     /**
-     * Get all users with pagination
-     * @param skip - Number of records to skip
-     * @param take - Number of records to take
-     * @returns Promise<User[]> - Array of users
+     * Update user's email verification status
+     * @param id - The user ID to update
+     * @param isVerified - Whether the email is verified
+     * @returns Promise<User> - The updated user
      */
-    async findAll(skip: number = 0, take: number = 10): Promise<User[]> {
-        return this.prisma.user.findMany({
-            skip,
-            take,
-            orderBy: { createdAt: 'desc' },
+    async updateEmailVerification(id: string, isVerified: boolean): Promise<User> {
+        return this.prisma.user.update({
+            where: { id },
+            data: {
+                isEmailVerified: isVerified,
+                verificationToken: null,
+                verificationTokenExpires: null,
+            },
+        });
+    }
+
+    /**
+     * Update user's verification token
+     * @param id - The user ID to update
+     * @param token - The new verification token
+     * @param expires - The token expiration date
+     * @returns Promise<User> - The updated user
+     */
+    async updateVerificationToken(
+        id: string,
+        token: string,
+        expires: Date
+    ): Promise<User> {
+        return this.prisma.user.update({
+            where: { id },
+            data: {
+                verificationToken: token,
+                verificationTokenExpires: expires,
+            },
         });
     }
 }

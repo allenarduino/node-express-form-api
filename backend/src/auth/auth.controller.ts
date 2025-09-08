@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { UserRepository, ProfileRepository } from '../domain/repositories';
+import { AuthRepository } from './auth.repository';
+import { UserRepository } from '../user/user.repository';
 import { createEmailProvider } from '../infrastructure/email';
 
 /**
@@ -11,11 +12,11 @@ export class AuthController {
 
     constructor() {
         // Initialize dependencies
+        const authRepo = new AuthRepository();
         const userRepo = new UserRepository();
-        const profileRepo = new ProfileRepository();
         const emailProvider = createEmailProvider();
 
-        this.authService = new AuthService(userRepo, profileRepo, emailProvider);
+        this.authService = new AuthService(authRepo, userRepo, emailProvider);
     }
 
     /**

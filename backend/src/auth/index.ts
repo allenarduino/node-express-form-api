@@ -1,6 +1,7 @@
 // Export auth module components
 export { AuthService } from './auth.service';
 export { AuthController } from './auth.controller';
+export { AuthRepository } from './auth.repository';
 export { createAuthRoutes } from './auth.routes';
 
 // Example usage:

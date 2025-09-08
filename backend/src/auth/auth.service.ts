@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { UserRepository } from '../domain/repositories/UserRepository';
-import { ProfileRepository } from '../domain/repositories/ProfileRepository';
+import { AuthRepository } from './auth.repository';
+import { UserRepository } from '../user/user.repository';
 import { EmailProvider } from '../infrastructure/email/EmailProvider';
 import { env } from '../config/env';
 
@@ -11,8 +11,8 @@ import { env } from '../config/env';
  */
 export class AuthService {
     constructor(
+        private authRepo: AuthRepository,
         private userRepo: UserRepository,
-        private profileRepo: ProfileRepository,
         private emailProvider: EmailProvider
     ) { }
 
@@ -25,7 +25,7 @@ export class AuthService {
      */
     async signUp(email: string, password: string): Promise<{ id: string; email: string }> {
         // Check if user already exists
-        const existingUser = await this.userRepo.findByEmail(email);
+        const existingUser = await this.authRepo.findByEmail(email);
         if (existingUser) {
             throw new Error('User with this email already exists');
         }
@@ -38,7 +38,7 @@ export class AuthService {
         const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
         // Create user with verification token
-        const user = await this.userRepo.create({
+        const user = await this.authRepo.createUser({
             email,
             passwordHash,
             isEmailVerified: false,
@@ -47,7 +47,7 @@ export class AuthService {
         });
 
         // Create blank profile for the user
-        await this.profileRepo.create(user.id);
+        await this.userRepo.createProfile(user.id);
 
         // Send verification email
         const verificationLink = `${env.APP_URL}/api/auth/verify?token=${verificationToken}`;
@@ -79,7 +79,7 @@ export class AuthService {
      */
     async verifyEmail(token: string): Promise<{ id: string; email: string; isEmailVerified: boolean }> {
         // Find user by verification token
-        const user = await this.userRepo.findByVerificationToken(token);
+        const user = await this.authRepo.findByVerificationToken(token);
         if (!user) {
             throw new Error('Invalid verification token');
         }
@@ -90,11 +90,7 @@ export class AuthService {
         }
 
         // Update user to mark email as verified and clear token fields
-        const updatedUser = await this.userRepo.update(user.id, {
-            isEmailVerified: true,
-            verificationToken: null,
-            verificationTokenExpires: null,
-        });
+        const updatedUser = await this.authRepo.updateEmailVerification(user.id, true);
 
         return {
             id: updatedUser.id,
@@ -112,7 +108,7 @@ export class AuthService {
      */
     async login(email: string, password: string): Promise<{ token: string }> {
         // Find user by email
-        const user = await this.userRepo.findByEmail(email);
+        const user = await this.authRepo.findByEmail(email);
         if (!user) {
             throw new Error('Invalid email or password');
         }
@@ -166,7 +162,7 @@ export class AuthService {
      * @throws Error if user not found or already verified
      */
     async resendVerificationEmail(email: string): Promise<void> {
-        const user = await this.userRepo.findByEmail(email);
+        const user = await this.authRepo.findByEmail(email);
         if (!user) {
             throw new Error('User not found');
         }
@@ -180,10 +176,7 @@ export class AuthService {
         const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
         // Update user with new token
-        await this.userRepo.update(user.id, {
-            verificationToken,
-            verificationTokenExpires,
-        });
+        await this.authRepo.updateVerificationToken(user.id, verificationToken, verificationTokenExpires);
 
         // Send verification email
         const verificationLink = `${env.APP_URL}/api/auth/verify?token=${verificationToken}`;

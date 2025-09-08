@@ -1,5 +1,6 @@
 import express from 'express';
 import { createAuthRoutes } from './auth';
+import { createUserRoutes } from './user';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +21,9 @@ app.get('/health', (req, res) => {
 
 // Auth routes
 app.use('/api/auth', createAuthRoutes());
+
+// User routes
+app.use('/api/user', createUserRoutes());
 
 // Start server
 app.listen(PORT, () => {
