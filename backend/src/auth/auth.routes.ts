@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
+import { authMiddleware } from '../presentation/middleware/auth';
 
 /**
  * Authentication routes
@@ -24,7 +25,7 @@ export function createAuthRoutes(): Router {
     router.post('/resend-verification', resendVerification);
 
     // Protected routes
-    router.get('/me', getMe);
+    router.get('/me', authMiddleware, getMe);
 
     return router;
 }

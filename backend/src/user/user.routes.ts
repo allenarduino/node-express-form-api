@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { UserController } from './user.controller';
+import { authMiddleware } from '../presentation/middleware/auth';
 
 /**
  * User routes for profile management
@@ -16,10 +17,10 @@ export function createUserRoutes(): Router {
     const getPublicProfile = userController.getPublicProfile.bind(userController);
 
     // Protected routes (require authentication)
-    router.get('/me', getProfile);
-    router.put('/me/profile', updateProfile);
-    router.get('/info', getUserInfo);
-    router.delete('/profile', deleteProfile);
+    router.get('/me', authMiddleware, getProfile);
+    router.put('/me/profile', authMiddleware, updateProfile);
+    router.get('/info', authMiddleware, getUserInfo);
+    router.delete('/profile', authMiddleware, deleteProfile);
 
     // Public routes
     router.get('/profile/:userId', getPublicProfile);
