@@ -16,10 +16,25 @@ A Node.js + TypeScript project scaffold with Express, Prisma, and authentication
 
 ### Prerequisites
 
-- Node.js (v16 or higher)
+- Node.js (v18 or higher)
 - npm
+- Docker & Docker Compose (for containerized setup)
 
-### Installation
+### Quick Start with Docker (Recommended)
+
+1. Clone the repository
+2. Start the development environment:
+   ```bash
+   make run-dev
+   ```
+   Or using Docker Compose directly:
+   ```bash
+   docker-compose up -d app-dev db
+   ```
+
+3. The API will be available at `http://localhost:4001`
+
+### Local Development Setup
 
 1. Clone the repository
 2. Install dependencies:
@@ -38,14 +53,12 @@ A Node.js + TypeScript project scaffold with Express, Prisma, and authentication
    npm run prisma:dev
    ```
 
-### Development
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-Start the development server:
-```bash
-npm run dev
-```
-
-The server will start on `http://localhost:3000` (or the PORT specified in your .env file).
+The server will start on `http://localhost:4000` (or the PORT specified in your .env file).
 
 ### Building
 
@@ -59,14 +72,45 @@ Start the production server:
 npm start
 ```
 
+### Docker Commands
+
+```bash
+# Start development environment
+make run-dev
+
+# Start production environment  
+make run-local
+
+# Stop all services
+make down-local
+
+# View logs
+make logs
+
+# Run database migrations
+make migrate
+
+# Run tests
+make test
+
+# Clean up everything
+make clean
+```
+
+For detailed Docker instructions, see [README-Docker.md](./README-Docker.md).
+
 ## Project Structure
 
 ```
 ├── src/                 # Source code
 ├── prisma/             # Database schema and migrations
-├── scripts/            # Utility scripts
+├── tests/              # Integration tests
 ├── dist/               # Compiled JavaScript (generated)
-└── package.json        # Dependencies and scripts
+├── Dockerfile          # Container definition
+├── docker-compose.yml  # Multi-container setup
+├── Makefile           # Convenience commands
+├── .dockerignore      # Docker build exclusions
+└── package.json       # Dependencies and scripts
 ```
 
 ## Available Scripts
@@ -75,6 +119,9 @@ npm start
 - `npm run build` - Compile TypeScript to JavaScript
 - `npm start` - Start production server
 - `npm run prisma:dev` - Run Prisma migrations
+- `npm test` - Run integration tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
 
 ## Environment Variables
 

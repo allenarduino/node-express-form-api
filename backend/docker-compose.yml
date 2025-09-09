@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: auth-api-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: express_auth_boilerplate
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - auth-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Express API Application
+  app:
+    build: .
+    container_name: auth-api-app
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "mysql://appuser:apppassword@db:3306/express_auth_boilerplate"
+      JWT_SECRET: "your-production-jwt-secret-change-this"
+      JWT_EXPIRES_IN: "1d"
+      EMAIL_PROVIDER: "console"
+      APP_URL: "http://localhost:4000"
+      PORT: 4000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - auth-network
+    volumes:
+      # Mount source code for development (comment out for production)
+      - .:/app
+      - /app/node_modules
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        npx prisma db push &&
+        echo 'Database schema updated successfully' &&
+        npm start
+      "
+
+  # Development service with hot reload
+  app-dev:
+    build: .
+    container_name: auth-api-app-dev
+    restart: unless-stopped
+    ports:
+      - "4001:4000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: "mysql://appuser:apppassword@db:3306/express_auth_boilerplate"
+      JWT_SECRET: "dev-jwt-secret"
+      JWT_EXPIRES_IN: "1d"
+      EMAIL_PROVIDER: "console"
+      APP_URL: "http://localhost:4001"
+      PORT: 4000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - auth-network
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  auth-network:
+    driver: bridge
