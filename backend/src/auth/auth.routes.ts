@@ -5,17 +5,17 @@ import { authMiddleware } from '../presentation/middleware/auth';
 /**
  * Authentication routes
  */
-export function createAuthRoutes(): Router {
+export function createAuthRoutes(authController?: AuthController): Router {
     const router = Router();
-    const authController = new AuthController();
+    const controller = authController || new AuthController();
 
     // Bind methods to preserve 'this' context
-    const signUp = authController.signUp.bind(authController);
-    const verifyEmail = authController.verifyEmail.bind(authController);
-    const login = authController.login.bind(authController);
-    const verifyToken = authController.verifyToken.bind(authController);
-    const resendVerification = authController.resendVerification.bind(authController);
-    const getMe = authController.getMe.bind(authController);
+    const signUp = controller.signUp.bind(controller);
+    const verifyEmail = controller.verifyEmail.bind(controller);
+    const login = controller.login.bind(controller);
+    const verifyToken = controller.verifyToken.bind(controller);
+    const resendVerification = controller.resendVerification.bind(controller);
+    const getMe = controller.getMe.bind(controller);
 
     // Public routes
     router.post('/signup', signUp);

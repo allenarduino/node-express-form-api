@@ -9,11 +9,14 @@ import { updateProfileSchema } from './user.validation';
 export class UserController {
     private userService: UserService;
 
-    constructor() {
-        // Initialize dependencies
-        const userRepo = new UserRepository();
-
-        this.userService = new UserService(userRepo);
+    constructor(userService?: UserService) {
+        if (userService) {
+            this.userService = userService;
+        } else {
+            // Initialize dependencies for backward compatibility
+            const userRepo = new UserRepository();
+            this.userService = new UserService(userRepo);
+        }
     }
 
     /**

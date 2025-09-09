@@ -11,13 +11,16 @@ import { signupSchema, loginSchema, verifyEmailSchema, resendVerificationSchema,
 export class AuthController {
     private authService: AuthService;
 
-    constructor() {
-        // Initialize dependencies
-        const authRepo = new AuthRepository();
-        const userRepo = new UserRepository();
-        const emailProvider = createEmailProvider();
-
-        this.authService = new AuthService(authRepo, userRepo, emailProvider);
+    constructor(authService?: AuthService) {
+        if (authService) {
+            this.authService = authService;
+        } else {
+            // Initialize dependencies for backward compatibility
+            const authRepo = new AuthRepository();
+            const userRepo = new UserRepository();
+            const emailProvider = createEmailProvider();
+            this.authService = new AuthService(authRepo, userRepo, emailProvider);
+        }
     }
 
     /**

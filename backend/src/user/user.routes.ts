@@ -5,16 +5,16 @@ import { authMiddleware } from '../presentation/middleware/auth';
 /**
  * User routes for profile management
  */
-export function createUserRoutes(): Router {
+export function createUserRoutes(userController?: UserController): Router {
     const router = Router();
-    const userController = new UserController();
+    const controller = userController || new UserController();
 
     // Bind methods to preserve 'this' context
-    const getProfile = userController.getProfile.bind(userController);
-    const updateProfile = userController.updateProfile.bind(userController);
-    const getUserInfo = userController.getUserInfo.bind(userController);
-    const deleteProfile = userController.deleteProfile.bind(userController);
-    const getPublicProfile = userController.getPublicProfile.bind(userController);
+    const getProfile = controller.getProfile.bind(controller);
+    const updateProfile = controller.updateProfile.bind(controller);
+    const getUserInfo = controller.getUserInfo.bind(controller);
+    const deleteProfile = controller.deleteProfile.bind(controller);
+    const getPublicProfile = controller.getPublicProfile.bind(controller);
 
     // Protected routes (require authentication)
     router.get('/me', authMiddleware, getProfile);
