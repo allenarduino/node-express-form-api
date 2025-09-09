@@ -1,0 +1,38 @@
+import { z } from 'zod';
+
+/**
+ * Validation schemas for authentication endpoints
+ */
+
+// Signup validation
+export const signupSchema = z.object({
+    email: z.string().email('Invalid email format'),
+    password: z.string().min(6, 'Password must be at least 6 characters long'),
+});
+
+// Login validation
+export const loginSchema = z.object({
+    email: z.string().email('Invalid email format'),
+    password: z.string().min(1, 'Password is required'),
+});
+
+// Verify email validation
+export const verifyEmailSchema = z.object({
+    token: z.string().min(1, 'Verification token is required'),
+});
+
+// Resend verification validation
+export const resendVerificationSchema = z.object({
+    email: z.string().email('Invalid email format'),
+});
+
+// Verify token validation
+export const verifyTokenSchema = z.object({
+    token: z.string().min(1, 'Token is required'),
+});
+
+export type SignupInput = z.infer<typeof signupSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
+export type VerifyTokenInput = z.infer<typeof verifyTokenSchema>;

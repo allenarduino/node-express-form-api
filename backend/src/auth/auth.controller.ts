@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { AuthRepository } from './auth.repository';
 import { UserRepository } from '../user/user.repository';
 import { createEmailProvider } from '../infrastructure/email';
+import { signupSchema, loginSchema, verifyEmailSchema, resendVerificationSchema, verifyTokenSchema } from './auth.validation';
 
 /**
  * Authentication controller for handling HTTP requests
@@ -25,25 +26,21 @@ export class AuthController {
      */
     async signUp(req: Request, res: Response): Promise<void> {
         try {
-            const { email, password } = req.body;
-
-            // Validate input
-            if (!email || !password) {
+            // Validate input with Zod
+            const validationResult = signupSchema.safeParse(req.body);
+            if (!validationResult.success) {
                 res.status(400).json({
                     success: false,
-                    message: 'Email and password are required',
+                    message: 'Validation failed',
+                    errors: validationResult.error.issues.map((err: any) => ({
+                        field: err.path.join('.'),
+                        message: err.message,
+                    })),
                 });
                 return;
             }
 
-            if (password.length < 6) {
-                res.status(400).json({
-                    success: false,
-                    message: 'Password must be at least 6 characters long',
-                });
-                return;
-            }
-
+            const { email, password } = validationResult.data;
             const user = await this.authService.signUp(email, password);
 
             res.status(201).json({
@@ -103,17 +100,21 @@ export class AuthController {
      */
     async login(req: Request, res: Response): Promise<void> {
         try {
-            const { email, password } = req.body;
-
-            // Validate input
-            if (!email || !password) {
+            // Validate input with Zod
+            const validationResult = loginSchema.safeParse(req.body);
+            if (!validationResult.success) {
                 res.status(400).json({
                     success: false,
-                    message: 'Email and password are required',
+                    message: 'Validation failed',
+                    errors: validationResult.error.issues.map((err: any) => ({
+                        field: err.path.join('.'),
+                        message: err.message,
+                    })),
                 });
                 return;
             }
 
+            const { email, password } = validationResult.data;
             const result = await this.authService.login(email, password);
 
             res.status(200).json({

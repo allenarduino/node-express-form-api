@@ -19,10 +19,10 @@ export interface UserProfileData {
  * Profile update data structure
  */
 export interface ProfileUpdateData {
-    name?: string;
-    bio?: string;
-    avatarUrl?: string;
-    website?: string;
+    name?: string | null;
+    bio?: string | null;
+    avatarUrl?: string | null;
+    website?: string | null;
 }
 
 /**

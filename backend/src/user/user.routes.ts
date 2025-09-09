@@ -16,8 +16,8 @@ export function createUserRoutes(): Router {
     const getPublicProfile = userController.getPublicProfile.bind(userController);
 
     // Protected routes (require authentication)
-    router.get('/profile', getProfile);
-    router.put('/profile', updateProfile);
+    router.get('/me', getProfile);
+    router.put('/me/profile', updateProfile);
     router.get('/info', getUserInfo);
     router.delete('/profile', deleteProfile);
 

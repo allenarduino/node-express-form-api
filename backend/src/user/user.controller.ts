@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
+import { updateProfileSchema } from './user.validation';
 
 /**
  * User controller for handling profile-related HTTP requests
@@ -47,13 +48,12 @@ export class UserController {
     }
 
     /**
-     * PUT /api/user/profile
+     * PUT /api/user/me/profile
      * Update current user's profile
      */
     async updateProfile(req: Request, res: Response): Promise<void> {
         try {
             const userId = req.user?.id; // Assuming user is attached by auth middleware
-            const { name, bio, avatarUrl, website } = req.body;
 
             if (!userId) {
                 res.status(401).json({
@@ -63,22 +63,31 @@ export class UserController {
                 return;
             }
 
-            // Validate input
-            if (!name && !bio && !avatarUrl && !website) {
+            // Validate input with Zod
+            const validationResult = updateProfileSchema.safeParse(req.body);
+            if (!validationResult.success) {
                 res.status(400).json({
                     success: false,
-                    message: 'At least one field must be provided for update',
+                    message: 'Validation failed',
+                    errors: validationResult.error.issues.map((err: any) => ({
+                        field: err.path.join('.'),
+                        message: err.message,
+                    })),
                 });
                 return;
             }
 
-            const updateData: any = {};
-            if (name !== undefined) updateData.name = name;
-            if (bio !== undefined) updateData.bio = bio;
-            if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
-            if (website !== undefined) updateData.website = website;
+            const updateData = validationResult.data;
 
-            const updatedProfile = await this.userService.updateProfile(userId, updateData);
+            // Transform undefined values to null to match ProfileUpdateData interface
+            const transformedData = {
+                name: updateData.name ?? null,
+                bio: updateData.bio ?? null,
+                avatarUrl: updateData.avatarUrl ?? null,
+                website: updateData.website ?? null,
+            };
+
+            const updatedProfile = await this.userService.updateProfile(userId, transformedData);
 
             res.status(200).json({
                 success: true,
