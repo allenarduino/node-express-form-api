@@ -1,18 +1,33 @@
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useAuth } from '../hooks/useAuth'
 
 export function Navbar() {
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const { user, isAuthenticated, logout } = useAuth()
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null)
 
+    // Close dropdown when clicking outside
     useEffect(() => {
-        // Check if user is authenticated from localStorage
-        const authStatus = localStorage.getItem('isAuthenticated')
-        setIsAuthenticated(authStatus === 'true')
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
     }, [])
 
     const handleLogout = () => {
-        localStorage.removeItem('isAuthenticated')
-        setIsAuthenticated(false)
+        logout()
+        setIsDropdownOpen(false)
+    }
+
+    const getUserInitials = (email: string) => {
+        return email.charAt(0).toUpperCase()
     }
 
     return (
@@ -37,12 +52,41 @@ export function Navbar() {
                                 >
                                     Dashboard
                                 </Link>
-                                <button
-                                    onClick={handleLogout}
-                                    className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                                >
-                                    Logout
-                                </button>
+
+                                {/* User Avatar Dropdown */}
+                                <div className="relative" ref={dropdownRef}>
+                                    <button
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                        aria-label="User menu"
+                                    >
+                                        <span className="text-sm font-medium">
+                                            {user ? getUserInitials(user.email) : 'U'}
+                                        </span>
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    {isDropdownOpen && (
+                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                                            <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
+                                                <p className="font-medium">{user?.email}</p>
+                                            </div>
+                                            <Link
+                                                to="/profile"
+                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                                onClick={() => setIsDropdownOpen(false)}
+                                            >
+                                                Profile
+                                            </Link>
+                                            <button
+                                                onClick={handleLogout}
+                                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                            >
+                                                Logout
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </>
                         ) : (
                             <>
