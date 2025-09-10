@@ -1,21 +1,19 @@
 import { Routes, Route } from 'react-router-dom'
+import { Navbar } from './components/Navbar'
+import { LandingPage } from './pages/LandingPage'
+import { SignupPage } from './pages/SignupPage'
+import { LoginPage } from './pages/LoginPage'
+import { DashboardPage } from './pages/DashboardPage'
 
 function App() {
     return (
         <div className="min-h-screen bg-gray-50">
+            <Navbar />
             <Routes>
-                <Route path="/" element={
-                    <div className="flex items-center justify-center min-h-screen">
-                        <div className="text-center">
-                            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                                Express React Auth
-                            </h1>
-                            <p className="text-gray-600">
-                                Frontend is running with Vite + React + TypeScript + Tailwind CSS
-                            </p>
-                        </div>
-                    </div>
-                } />
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
             </Routes>
         </div>
     )
