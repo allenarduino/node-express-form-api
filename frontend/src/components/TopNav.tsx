@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 interface TopNavProps {
@@ -10,7 +11,7 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
-    // Close dropdown when clicking outside
+    // Close dropdown when clicking outside or pressing Escape
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -18,9 +19,18 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick }) => {
             }
         }
 
+        const handleEscapeKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsDropdownOpen(false)
+            }
+        }
+
         document.addEventListener('mousedown', handleClickOutside)
+        document.addEventListener('keydown', handleEscapeKey)
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
+            document.removeEventListener('keydown', handleEscapeKey)
         }
     }, [])
 
@@ -31,6 +41,12 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick }) => {
 
     const getUserInitials = (email: string) => {
         return email.charAt(0).toUpperCase()
+    }
+
+    const getUserName = (email: string) => {
+        // Extract name from email (before @) and capitalize
+        const name = email.split('@')[0]
+        return name.charAt(0).toUpperCase() + name.slice(1)
     }
 
     return (
@@ -86,37 +102,64 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick }) => {
                     <div className="relative" ref={dropdownRef}>
                         <button
                             type="button"
-                            className="-m-1.5 flex items-center p-1.5"
+                            className="flex items-center p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            aria-label="Open user menu"
+                            aria-expanded={isDropdownOpen}
+                            aria-haspopup="menu"
+                            aria-label="User menu"
                         >
-                            <span className="sr-only">Open user menu</span>
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-medium">
                                 {user ? getUserInitials(user.email) : 'U'}
                             </div>
-                            <span className="hidden lg:flex lg:items-center">
-                                <span className="ml-4 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true">
-                                    {user?.email}
-                                </span>
-                                <svg className="ml-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                                        clipRule="evenodd"
-                                    />
-                                </svg>
-                            </span>
                         </button>
 
                         {/* Dropdown menu */}
                         {isDropdownOpen && (
-                            <div className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
-                                <button
-                                    onClick={handleLogout}
-                                    className="block w-full px-3 py-1 text-left text-sm leading-6 text-gray-900 hover:bg-gray-50"
-                                >
-                                    Sign out
-                                </button>
+                            <div
+                                className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                role="menu"
+                                aria-orientation="vertical"
+                                aria-labelledby="user-menu-button"
+                            >
+                                <div className="py-1" role="none">
+                                    {/* User info section */}
+                                    <div className="px-4 py-3 border-b border-gray-100">
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {user ? getUserName(user.email) : 'User'}
+                                        </p>
+                                        <p className="text-sm text-gray-500 truncate">
+                                            {user?.email}
+                                        </p>
+                                    </div>
+
+                                    {/* Navigation links */}
+                                    <Link
+                                        to="/dashboard/profile"
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                        role="menuitem"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        Profile
+                                    </Link>
+
+                                    <Link
+                                        to="/dashboard/settings"
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                        role="menuitem"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        Settings
+                                    </Link>
+
+                                    {/* Logout button */}
+                                    <button
+                                        onClick={handleLogout}
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                        role="menuitem"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
