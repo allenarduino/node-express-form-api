@@ -2,10 +2,13 @@ import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { Navbar } from './components/Navbar'
 import { RequireAuth } from './components/RequireAuth'
+import { DashboardLayout } from './layouts/DashboardLayout'
 import { LandingPage } from './pages/LandingPage'
 import { SignupPage } from './pages/SignupPage'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { ProfilePage } from './pages/ProfilePage'
+import { SettingsPage } from './pages/SettingsPage'
 
 function App() {
     return (
@@ -20,7 +23,29 @@ function App() {
                         path="/dashboard"
                         element={
                             <RequireAuth>
-                                <DashboardPage />
+                                <DashboardLayout>
+                                    <DashboardPage />
+                                </DashboardLayout>
+                            </RequireAuth>
+                        }
+                    />
+                    <Route
+                        path="/dashboard/profile"
+                        element={
+                            <RequireAuth>
+                                <DashboardLayout>
+                                    <ProfilePage />
+                                </DashboardLayout>
+                            </RequireAuth>
+                        }
+                    />
+                    <Route
+                        path="/dashboard/settings"
+                        element={
+                            <RequireAuth>
+                                <DashboardLayout>
+                                    <SettingsPage />
+                                </DashboardLayout>
                             </RequireAuth>
                         }
                     />
