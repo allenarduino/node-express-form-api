@@ -7,7 +7,7 @@ import { LandingPage } from './pages/LandingPage'
 import { SignupPage } from './pages/SignupPage'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
-import { ProfilePage } from './pages/ProfilePage'
+import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
 
 function App() {
