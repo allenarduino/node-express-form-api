@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
 import { config } from 'dotenv';
 import { createAuthRoutes } from './auth';
 import { createUserRoutes } from './user';
@@ -17,6 +18,19 @@ config();
 
 const app = express();
 const PORT = env.PORT || 4000;
+
+// CORS configuration
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5173'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Initialize repositories with Prisma instance
 const authRepository = new AuthRepository(prisma);

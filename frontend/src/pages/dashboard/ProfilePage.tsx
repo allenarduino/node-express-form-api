@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { api } from '../../lib/api'
+import api from '../../lib/api'
 
 // Zod validation schema
 const profileSchema = z.object({
@@ -50,7 +50,6 @@ export const ProfilePage: React.FC = () => {
         register,
         handleSubmit,
         formState: { errors },
-        reset,
         setValue,
     } = useForm<ProfileFormData>({
         resolver: zodResolver(profileSchema),

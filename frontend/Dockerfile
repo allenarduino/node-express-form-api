@@ -13,14 +13,9 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build the application
-RUN npm run build
-
 # Expose port
-EXPOSE 4000
+EXPOSE 5173
 
-# Default command (production)
-CMD ["npm", "run", "start"]
+# Start development server with host binding
+CMD ["npm", "run", "dev", "--", "--host"]
+
