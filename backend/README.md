@@ -44,7 +44,7 @@ A Node.js + TypeScript project scaffold with Express, Prisma, and authentication
 
 3. Set up environment variables:
    ```bash
-   cp .env.example .env
+   cp env.example .env
    # Edit .env with your configuration
    ```
 
@@ -125,14 +125,41 @@ For detailed Docker instructions, see [README-Docker.md](./README-Docker.md).
 
 ## Environment Variables
 
-Create a `.env` file in the root directory with the following variables:
+Create a `.env` file in the backend directory using `env.example` as a template:
 
-```env
-NODE_ENV=development
-PORT=3000
-DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
-JWT_SECRET="your-jwt-secret"
+```bash
+cp env.example .env
 ```
+
+Required variables:
+```env
+# Database
+DATABASE_URL=mysql://app_user:app_password@localhost:3307/express_react_auth
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+JWT_EXPIRES_IN=7d
+
+# Email Configuration (choose one)
+EMAIL_PROVIDER=resend
+EMAIL_FROM=Auth Starter <onboarding@resend.dev>
+RESEND_API_KEY=your-resend-api-key-here
+
+# OR for SMTP
+EMAIL_PROVIDER=smtp
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=your-email@gmail.com
+
+# App Configuration
+APP_URL=http://localhost:4001
+PORT=4000
+NODE_ENV=development
+```
+
+**Important**: Never commit your `.env` file to version control. The `env.example` file is provided as a template.
 
 ## License
 

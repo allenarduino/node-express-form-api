@@ -23,4 +23,4 @@ RUN npm run build
 EXPOSE 4000
 
 # Default command (production)
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start"] 

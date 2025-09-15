@@ -14,20 +14,35 @@ import { env } from '../../config/env';
  * @returns EmailProvider - The appropriate email provider instance
  */
 export function createEmailProvider(): EmailProvider {
-    const provider = env.EMAIL_PROVIDER.toLowerCase();
+  const provider = env.EMAIL_PROVIDER.toLowerCase();
 
-    switch (provider) {
-        case 'smtp':
-            try {
-                return new SmtpEmailProvider();
-            } catch (error) {
-                console.warn('SMTP configuration incomplete, falling back to console provider:', (error as Error).message);
-                return new ConsoleEmailProvider();
-            }
-        case 'console':
-        default:
-            return new ConsoleEmailProvider();
-    }
+  switch (provider) {
+    case 'resend':
+      try {
+        // Dynamic import to avoid loading ResendEmailProvider when not needed
+        const { ResendEmailProvider } = require('./ResendEmailProvider');
+        if (!env.RESEND_API_KEY) {
+          throw new Error('RESEND_API_KEY is not configured');
+        }
+        if (!env.EMAIL_FROM) {
+          throw new Error('EMAIL_FROM is not configured');
+        }
+        return new ResendEmailProvider(env.RESEND_API_KEY);
+      } catch (error) {
+        console.warn('Resend configuration incomplete, falling back to console provider:', (error as Error).message);
+        return new ConsoleEmailProvider();
+      }
+    case 'smtp':
+      try {
+        return new SmtpEmailProvider();
+      } catch (error) {
+        console.warn('SMTP configuration incomplete, falling back to console provider:', (error as Error).message);
+        return new ConsoleEmailProvider();
+      }
+    case 'console':
+    default:
+      return new ConsoleEmailProvider();
+  }
 }
 
 // Example usage:

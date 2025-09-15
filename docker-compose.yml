@@ -19,6 +19,8 @@ services:
       retries: 10
 
   # Backend Service
+  # Note: Create a .env file in the backend directory using env.example as a template
+  # to set your JWT_SECRET, RESEND_API_KEY, and EMAIL_FROM values
   backend:
     build:
       context: ./backend
@@ -34,9 +36,11 @@ services:
       - NODE_ENV=development
       - PORT=4000
       - DATABASE_URL=mysql://app_user:app_password@db:3306/express_react_auth
-      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+      - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=7d
-      - EMAIL_PROVIDER=console
+      - EMAIL_PROVIDER=resend
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - EMAIL_FROM=${EMAIL_FROM}
       - APP_URL=http://localhost:4001
     env_file:
       - ./backend/.env

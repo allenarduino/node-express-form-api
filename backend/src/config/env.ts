@@ -19,6 +19,8 @@ interface EnvConfig {
 
     // Email
     EMAIL_PROVIDER: string;
+    EMAIL_FROM: string;
+    RESEND_API_KEY: string;
     SMTP_HOST: string;
     SMTP_PORT: number;
     SMTP_USER: string;
@@ -58,7 +60,9 @@ export const env: EnvConfig = {
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
 
     // Email
-    EMAIL_PROVIDER: process.env.EMAIL_PROVIDER || 'smtp',
+    EMAIL_PROVIDER: process.env.EMAIL_PROVIDER || 'resend',
+    EMAIL_FROM: process.env.EMAIL_FROM || 'Auth Starter <onboarding@resend.dev>',
+    RESEND_API_KEY: process.env.RESEND_API_KEY || '',
     SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
     SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
     SMTP_USER: process.env.SMTP_USER || '',
@@ -75,6 +79,8 @@ export const {
     JWT_SECRET,
     JWT_EXPIRES_IN,
     EMAIL_PROVIDER,
+    EMAIL_FROM,
+    RESEND_API_KEY,
     SMTP_HOST,
     SMTP_PORT,
     SMTP_USER,
