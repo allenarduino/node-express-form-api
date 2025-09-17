@@ -1,37 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import api from '../../lib/api'
 import { DashboardLayout } from '../../layouts/DashboardLayout'
 
-// Zod validation schema
-const profileSchema = z.object({
-    name: z
-        .string()
-        .min(1, 'Name is required')
-        .max(100, 'Name must be less than 100 characters'),
-    bio: z
-        .string()
-        .max(500, 'Bio must be less than 500 characters')
-        .optional(),
-    avatarUrl: z
-        .string()
-        .url('Please enter a valid URL')
-        .optional()
-        .or(z.literal('')),
-    website: z
-        .string()
-        .url('Please enter a valid URL')
-        .optional()
-        .or(z.literal('')),
-})
-
-type ProfileFormData = z.infer<typeof profileSchema>
-
+// User profile interface
 interface UserProfile {
     id: string
     email: string
+    isEmailVerified: boolean
     profile?: {
         name?: string
         bio?: string
@@ -43,24 +18,7 @@ interface UserProfile {
 export const ProfilePage: React.FC = () => {
     const [user, setUser] = useState<UserProfile | null>(null)
     const [isLoading, setIsLoading] = useState(true)
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [submitError, setSubmitError] = useState<string | null>(null)
-    const [submitSuccess, setSubmitSuccess] = useState(false)
-
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        setValue,
-    } = useForm<ProfileFormData>({
-        resolver: zodResolver(profileSchema),
-        defaultValues: {
-            name: '',
-            bio: '',
-            avatarUrl: '',
-            website: '',
-        },
-    })
+    const [error, setError] = useState<string | null>(null)
 
     // Fetch user profile on mount
     useEffect(() => {
@@ -69,17 +27,10 @@ export const ProfilePage: React.FC = () => {
                 setIsLoading(true)
                 const response = await api.get('/user/me')
                 const userData = response.data
-
                 setUser(userData)
-
-                // Populate form with existing data
-                setValue('name', userData.profile?.name || '')
-                setValue('bio', userData.profile?.bio || '')
-                setValue('avatarUrl', userData.profile?.avatarUrl || '')
-                setValue('website', userData.profile?.website || '')
             } catch (error: any) {
                 console.error('Failed to fetch profile:', error)
-                setSubmitError(
+                setError(
                     error?.response?.data?.message ||
                     'Failed to load profile. Please try again.'
                 )
@@ -89,58 +40,50 @@ export const ProfilePage: React.FC = () => {
         }
 
         fetchProfile()
-    }, [setValue])
-
-    const onSubmit = async (data: ProfileFormData) => {
-        setIsSubmitting(true)
-        setSubmitError(null)
-        setSubmitSuccess(false)
-
-        try {
-            // Clean up empty strings to null for optional fields
-            const profileData = {
-                name: data.name,
-                bio: data.bio || null,
-                avatarUrl: data.avatarUrl || null,
-                website: data.website || null,
-            }
-
-            await api.put('/user/me', profileData)
-
-            setSubmitSuccess(true)
-
-            // Hide success message after 3 seconds
-            setTimeout(() => {
-                setSubmitSuccess(false)
-            }, 3000)
-
-        } catch (error: any) {
-            setSubmitError(
-                error?.response?.data?.message ||
-                error?.message ||
-                'Failed to update profile. Please try again.'
-            )
-        } finally {
-            setIsSubmitting(false)
-        }
-    }
+    }, [])
 
     if (isLoading) {
         return (
             <DashboardLayout>
                 <div className="max-w-4xl mx-auto">
-                    <h1 className="text-2xl font-semibold text-gray-900 mb-6">
-                        Profile
-                    </h1>
-                    <div className="bg-white shadow rounded-lg p-6">
-                        <div className="animate-pulse space-y-4">
-                            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                            <div className="h-10 bg-gray-200 rounded"></div>
-                            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                            <div className="h-20 bg-gray-200 rounded"></div>
-                            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                            <div className="h-10 bg-gray-200 rounded"></div>
+                    <div className="flex items-center justify-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                </div>
+            </DashboardLayout>
+        )
+    }
+
+    if (error) {
+        return (
+            <DashboardLayout>
+                <div className="max-w-4xl mx-auto">
+                    <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <h3 className="text-sm font-medium text-red-800">Error</h3>
+                                <div className="mt-2 text-sm text-red-700">
+                                    <p>{error}</p>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </DashboardLayout>
+        )
+    }
+
+    if (!user) {
+        return (
+            <DashboardLayout>
+                <div className="max-w-4xl mx-auto">
+                    <div className="text-center py-12">
+                        <p className="text-gray-500">No profile data available.</p>
                     </div>
                 </div>
             </DashboardLayout>
@@ -150,21 +93,17 @@ export const ProfilePage: React.FC = () => {
     return (
         <DashboardLayout>
             <div className="max-w-4xl mx-auto">
-                <h1 className="text-2xl font-semibold text-gray-900 mb-6">
-                    Profile
-                </h1>
-
                 <div className="bg-white shadow rounded-lg">
                     <div className="px-6 py-4 border-b border-gray-200">
-                        <h2 className="text-lg font-medium text-gray-900">Profile Information</h2>
-                        <p className="mt-1 text-sm text-gray-500">
-                            Update your personal information and preferences.
+                        <h1 className="text-2xl font-semibold text-gray-900">Profile Information</h1>
+                        <p className="mt-1 text-sm text-gray-600">
+                            View your account information and profile details.
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-6 space-y-6">
+                    <div className="px-6 py-6 space-y-6">
                         {/* Avatar Display */}
-                        {user?.profile?.avatarUrl && (
+                        {user.profile?.avatarUrl && (
                             <div className="flex items-center space-x-4">
                                 <div className="flex-shrink-0">
                                     <img
@@ -174,193 +113,92 @@ export const ProfilePage: React.FC = () => {
                                     />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-medium text-gray-900">Current Avatar</h3>
-                                    <p className="text-sm text-gray-500">Your profile picture</p>
+                                    <h3 className="text-lg font-medium text-gray-900">Profile Picture</h3>
+                                    <p className="text-sm text-gray-500">Your current profile picture</p>
                                 </div>
                             </div>
                         )}
 
-                        {/* Success message */}
-                        {submitSuccess && (
-                            <div className="rounded-md bg-green-50 p-4">
-                                <div className="flex">
-                                    <div className="flex-shrink-0">
-                                        <svg
-                                            className="h-5 w-5 text-green-400"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
+                        {/* User Information */}
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            {/* Name */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Name</label>
+                                <div className="mt-1 text-sm text-gray-900">
+                                    {user.profile?.name || 'Not set'}
+                                </div>
+                            </div>
+
+                            {/* Email */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                                <div className="mt-1 text-sm text-gray-900">{user.email}</div>
+                                <div className="mt-1 flex items-center">
+                                    {user.isEmailVerified ? (
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                            Verified
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                            </svg>
+                                            Unverified
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Bio */}
+                            <div className="sm:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Bio</label>
+                                <div className="mt-1 text-sm text-gray-900">
+                                    {user.profile?.bio || 'No bio provided'}
+                                </div>
+                            </div>
+
+                            {/* Website */}
+                            <div className="sm:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Website</label>
+                                <div className="mt-1 text-sm text-gray-900">
+                                    {user.profile?.website ? (
+                                        <a
+                                            href={user.profile.website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:text-blue-500"
                                         >
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                clipRule="evenodd"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-green-800">
-                                            Profile updated successfully!
-                                        </p>
+                                            {user.profile.website}
+                                        </a>
+                                    ) : (
+                                        'No website provided'
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Account Information */}
+                        <div className="border-t border-gray-200 pt-6">
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">User ID</label>
+                                    <div className="mt-1 text-sm text-gray-900 font-mono">{user.id}</div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Account Status</label>
+                                    <div className="mt-1">
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Active
+                                        </span>
                                     </div>
                                 </div>
                             </div>
-                        )}
-
-                        {/* Error message */}
-                        {submitError && (
-                            <div className="rounded-md bg-red-50 p-4">
-                                <div className="flex">
-                                    <div className="flex-shrink-0">
-                                        <svg
-                                            className="h-5 w-5 text-red-400"
-                                            viewBox="0 0 20 20"
-                                            fill="currentColor"
-                                        >
-                                            <path
-                                                fillRule="evenodd"
-                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                                clipRule="evenodd"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm text-red-800">{submitError}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Email (read-only) */}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                                Email address
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                value={user?.email || ''}
-                                disabled
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 sm:text-sm"
-                            />
-                            <p className="mt-1 text-xs text-gray-500">
-                                Email address cannot be changed
-                            </p>
                         </div>
-
-                        {/* Name */}
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                                Name *
-                            </label>
-                            <input
-                                {...register('name')}
-                                type="text"
-                                id="name"
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="Enter your full name"
-                            />
-                            {errors.name && (
-                                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-                            )}
-                        </div>
-
-                        {/* Bio */}
-                        <div>
-                            <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-                                Bio
-                            </label>
-                            <textarea
-                                {...register('bio')}
-                                id="bio"
-                                rows={4}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="Tell us about yourself..."
-                            />
-                            {errors.bio && (
-                                <p className="mt-1 text-sm text-red-600">{errors.bio.message}</p>
-                            )}
-                            <p className="mt-1 text-xs text-gray-500">
-                                Maximum 500 characters
-                            </p>
-                        </div>
-
-                        {/* Avatar URL */}
-                        <div>
-                            <label htmlFor="avatarUrl" className="block text-sm font-medium text-gray-700">
-                                Avatar URL
-                            </label>
-                            <input
-                                {...register('avatarUrl')}
-                                type="url"
-                                id="avatarUrl"
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="https://example.com/avatar.jpg"
-                            />
-                            {errors.avatarUrl && (
-                                <p className="mt-1 text-sm text-red-600">{errors.avatarUrl.message}</p>
-                            )}
-                            <p className="mt-1 text-xs text-gray-500">
-                                URL to your profile picture
-                            </p>
-                        </div>
-
-                        {/* Website */}
-                        <div>
-                            <label htmlFor="website" className="block text-sm font-medium text-gray-700">
-                                Website
-                            </label>
-                            <input
-                                {...register('website')}
-                                type="url"
-                                id="website"
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="https://yourwebsite.com"
-                            />
-                            {errors.website && (
-                                <p className="mt-1 text-sm text-red-600">{errors.website.message}</p>
-                            )}
-                            <p className="mt-1 text-xs text-gray-500">
-                                Your personal or professional website
-                            </p>
-                        </div>
-
-                        {/* Submit button */}
-                        <div className="flex justify-end">
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isSubmitting ? (
-                                    <>
-                                        <svg
-                                            className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <circle
-                                                className="opacity-25"
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke="currentColor"
-                                                strokeWidth="4"
-                                            ></circle>
-                                            <path
-                                                className="opacity-75"
-                                                fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                            ></path>
-                                        </svg>
-                                        Updating...
-                                    </>
-                                ) : (
-                                    'Update Profile'
-                                )}
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </DashboardLayout>
