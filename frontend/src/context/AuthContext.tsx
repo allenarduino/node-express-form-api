@@ -8,6 +8,7 @@ export interface User {
     id: string
     email: string
     name?: string
+    googlePicture?: string
     profile?: {
         name?: string
         bio?: string

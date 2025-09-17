@@ -13,16 +13,18 @@ import { env } from '../config/env';
  */
 export class AuthController {
     private authService: AuthService;
+    private authRepo: AuthRepository;
 
     constructor(authService?: AuthService) {
         if (authService) {
             this.authService = authService;
+            this.authRepo = new AuthRepository();
         } else {
             // Initialize dependencies for backward compatibility
-            const authRepo = new AuthRepository();
+            this.authRepo = new AuthRepository();
             const userRepo = new UserRepository();
             const emailProvider = createEmailProvider();
-            this.authService = new AuthService(authRepo, userRepo, emailProvider);
+            this.authService = new AuthService(this.authRepo, userRepo, emailProvider);
         }
     }
 
@@ -218,10 +220,29 @@ export class AuthController {
             const token = authHeader.substring(7); // Remove 'Bearer ' prefix
             const userInfo = await this.authService.verifyToken(token);
 
+            // Fetch full user data from database including Google OAuth fields
+            const fullUser = await this.authRepo.findById(userInfo.id);
+
+            if (!fullUser) {
+                res.status(404).json({
+                    success: false,
+                    message: 'User not found',
+                });
+                return;
+            }
+
+            // Return full user data
             res.status(200).json({
                 success: true,
                 message: 'User info retrieved successfully',
-                data: userInfo,
+                data: {
+                    id: fullUser.id,
+                    email: fullUser.email,
+                    name: fullUser.googleName,
+                    googlePicture: fullUser.googlePicture,
+                    isEmailVerified: fullUser.isEmailVerified,
+                    authProvider: fullUser.authProvider
+                },
             });
         } catch (error) {
             res.status(401).json({

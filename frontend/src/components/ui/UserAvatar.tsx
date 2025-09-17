@@ -39,13 +39,33 @@ export function UserAvatar({ user, size = 'md', className = '' }: UserAvatarProp
         return user.email.slice(0, 2).toUpperCase();
     };
 
-    if (user?.profile?.avatarUrl) {
+    // Check for avatar URL with fallback handling
+    const avatarUrl = user?.profile?.avatarUrl || user?.googlePicture;
+
+    if (avatarUrl) {
         return (
-            <img
-                src={user.profile.avatarUrl}
-                alt={user.profile.name || user.name || user.email}
-                className={`${sizeClasses[size]} rounded-full object-cover ${className}`}
-            />
+            <div className="relative">
+                <img
+                    src={avatarUrl}
+                    alt={user.profile?.name || user.name || user.email}
+                    className={`${sizeClasses[size]} rounded-full object-cover ${className}`}
+                    onError={(e) => {
+                        // Hide the image and show initials fallback if image fails to load
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                    }}
+                />
+                {/* Fallback initials - hidden by default */}
+                <div
+                    className={`${sizeClasses[size]} rounded-full bg-primary-light flex items-center justify-center ${className} absolute top-0 left-0`}
+                    style={{ display: 'none' }}
+                >
+                    <span className={`${textSizeClasses[size]} font-medium text-primary-dark`}>
+                        {user ? getInitials(user) : '?'}
+                    </span>
+                </div>
+            </div>
         );
     }
 
