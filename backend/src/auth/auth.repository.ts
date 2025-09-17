@@ -131,4 +131,87 @@ export class AuthRepository {
             },
         });
     }
+
+    /**
+     * Find a user by their Google ID
+     * @param googleId - The Google ID to search for
+     * @returns Promise<User | null> - The user if found, null otherwise
+     */
+    async findByGoogleId(googleId: string): Promise<User | null> {
+        return this.prisma.user.findUnique({
+            where: { googleId },
+        });
+    }
+
+    /**
+     * Create a new user with Google OAuth data
+     * @param data - User creation data including Google OAuth info
+     * @returns Promise<User> - The created user
+     */
+    async createGoogleUser(data: {
+        email: string;
+        googleId: string;
+        googleEmail?: string;
+        googleName?: string;
+        googlePicture?: string;
+        isEmailVerified?: boolean;
+    }): Promise<User> {
+        return this.prisma.user.create({
+            data: {
+                email: data.email,
+                googleId: data.googleId,
+                googleEmail: data.googleEmail || null,
+                googleName: data.googleName || null,
+                googlePicture: data.googlePicture || null,
+                isEmailVerified: data.isEmailVerified || true,
+                authProvider: 'google',
+            },
+        });
+    }
+
+    /**
+     * Link Google account to existing user
+     * @param userId - The user ID to link to
+     * @param googleData - Google OAuth data
+     * @returns Promise<User> - The updated user
+     */
+    async linkGoogleAccount(userId: string, googleData: {
+        googleId: string;
+        googleEmail?: string;
+        googleName?: string;
+        googlePicture?: string;
+    }): Promise<User> {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                googleId: googleData.googleId,
+                googleEmail: googleData.googleEmail || null,
+                googleName: googleData.googleName || null,
+                googlePicture: googleData.googlePicture || null,
+                authProvider: 'google',
+                isEmailVerified: true, // Google emails are pre-verified
+            },
+        });
+    }
+
+    /**
+     * Update user's Google OAuth information
+     * @param userId - The user ID to update
+     * @param googleData - Google OAuth data to update
+     * @returns Promise<User> - The updated user
+     */
+    async updateGoogleInfo(userId: string, googleData: {
+        googleEmail?: string;
+        googleName?: string;
+        googlePicture?: string;
+    }): Promise<User> {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                googleEmail: googleData.googleEmail || null,
+                googleName: googleData.googleName || null,
+                googlePicture: googleData.googlePicture || null,
+            },
+        });
+    }
 }

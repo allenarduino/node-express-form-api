@@ -61,6 +61,24 @@ export class UserRepository {
     }
 
     /**
+     * Create a new profile for a user with initial data (e.g., from Google OAuth)
+     * @param userId - The user ID to create profile for
+     * @param profileData - Initial profile data
+     * @returns Promise<Profile> - The created profile
+     */
+    async createProfileWithAvatar(userId: string, profileData: { name?: string | null; avatarUrl?: string | null }): Promise<Profile> {
+        return this.prisma.profile.create({
+            data: {
+                userId,
+                name: profileData.name || null,
+                bio: null,
+                avatarUrl: profileData.avatarUrl || null,
+                website: null,
+            },
+        });
+    }
+
+    /**
      * Find a profile by user ID
      * @param userId - The user ID to search for
      * @returns Promise<Profile | null> - The profile if found, null otherwise

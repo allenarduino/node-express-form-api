@@ -57,12 +57,20 @@ export function Navbar() {
                                 <div className="relative" ref={dropdownRef}>
                                     <button
                                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                        className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                        className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 overflow-hidden"
                                         aria-label="User menu"
                                     >
-                                        <span className="text-sm font-medium">
-                                            {user ? getUserInitials(user.email) : 'U'}
-                                        </span>
+                                        {user?.profile?.avatarUrl ? (
+                                            <img
+                                                src={user.profile.avatarUrl}
+                                                alt="User avatar"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="text-sm font-medium">
+                                                {user ? getUserInitials(user.email) : 'U'}
+                                            </span>
+                                        )}
                                     </button>
 
                                     {/* Dropdown Menu */}

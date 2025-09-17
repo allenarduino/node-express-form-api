@@ -26,6 +26,10 @@ interface EnvConfig {
     SMTP_USER: string;
     SMTP_PASS: string;
     SMTP_FROM: string;
+
+    // Google OAuth
+    GOOGLE_CLIENT_ID: string;
+    GOOGLE_CLIENT_SECRET: string;
 }
 
 // Validate required environment variables
@@ -68,6 +72,10 @@ export const env: EnvConfig = {
     SMTP_USER: process.env.SMTP_USER || '',
     SMTP_PASS: process.env.SMTP_PASS || '',
     SMTP_FROM: process.env.SMTP_FROM || process.env.SMTP_USER || '',
+
+    // Google OAuth
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
 };
 
 // Export individual constants for convenience
@@ -86,6 +94,8 @@ export const {
     SMTP_USER,
     SMTP_PASS,
     SMTP_FROM,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
 } = env;
 
 // Export default

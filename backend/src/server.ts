@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import passport from 'passport';
 import { config } from 'dotenv';
 import { createAuthRoutes } from './auth';
 import { createUserRoutes } from './user';
@@ -12,6 +13,7 @@ import { AuthRepository } from './auth/auth.repository';
 import { UserRepository } from './user/user.repository';
 import { AuthController } from './auth/auth.controller';
 import { UserController } from './user/user.controller';
+import { configureGoogleStrategy } from './auth/google.strategy';
 
 // Load environment variables
 config();
@@ -47,9 +49,15 @@ const userService = new UserService(userRepository);
 const authController = new AuthController(authService);
 const userController = new UserController(userService);
 
+// Initialize Passport and Google OAuth strategy
+configureGoogleStrategy();
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Initialize Passport middleware
+app.use(passport.initialize());
 
 // Health check route
 app.get('/health', (req: Request, res: Response) => {
@@ -138,6 +146,8 @@ const server = app.listen(PORT, () => {
     console.log('  POST /api/auth/signup - Register user');
     console.log('  GET  /api/auth/verify?token=xxx - Verify email');
     console.log('  POST /api/auth/login - Login user');
+    console.log('  GET  /api/auth/google - Google OAuth login');
+    console.log('  GET  /api/auth/google/callback - Google OAuth callback');
     console.log('  GET  /api/auth/me - Get current user (protected)');
     console.log('  GET  /api/user/me - Get user profile (protected)');
     console.log('  PUT  /api/user/me/profile - Update profile (protected)');

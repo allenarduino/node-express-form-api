@@ -153,6 +153,10 @@ SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 SMTP_FROM=your-email@gmail.com
 
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
 # App Configuration
 APP_URL=http://localhost:4001
 PORT=4000
@@ -160,6 +164,60 @@ NODE_ENV=development
 ```
 
 **Important**: Never commit your `.env` file to version control. The `env.example` file is provided as a template.
+
+## Google OAuth Setup
+
+This application supports Google OAuth authentication. To enable it:
+
+### 1. Create Google OAuth Credentials
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API
+4. Go to "Credentials" in the left sidebar
+5. Click "Create Credentials" → "OAuth 2.0 Client IDs"
+6. Choose "Web application" as the application type
+7. Add authorized redirect URIs:
+   - For development: `http://localhost:4001/api/auth/google/callback`
+   - For production: `https://yourdomain.com/api/auth/google/callback`
+8. Copy the Client ID and Client Secret
+
+### 2. Configure Environment Variables
+
+Add the following to your `.env` file:
+
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+```
+
+### 3. Database Schema Update
+
+Push the schema changes to add Google OAuth fields:
+
+```bash
+npx prisma db push
+```
+
+Or if you prefer to use the npm script:
+
+```bash
+npm run prisma:dev
+```
+
+### 4. Test Google OAuth
+
+1. Start the application: `npm run dev`
+2. Navigate to the login page
+3. Click "Continue with Google"
+4. Complete the OAuth flow
+
+## Features
+
+- **Multiple Authentication Methods**: Email/password and Google OAuth
+- **User Account Linking**: Existing email users can link their Google account
+- **Automatic Email Verification**: Google OAuth users are automatically verified
+- **JWT Token Generation**: Same JWT system for both authentication methods
 
 ## License
 

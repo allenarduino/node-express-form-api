@@ -40,6 +40,8 @@ services:
       - JWT_EXPIRES_IN=7d
       - EMAIL_PROVIDER=resend
       - RESEND_API_KEY=${RESEND_API_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - EMAIL_FROM=${EMAIL_FROM}
       - APP_URL=http://localhost:4001
     env_file:

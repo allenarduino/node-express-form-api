@@ -166,6 +166,23 @@ export const ProfilePage: React.FC = () => {
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-6 space-y-6">
+                    {/* Avatar Display */}
+                    {user?.profile?.avatarUrl && (
+                        <div className="flex items-center space-x-4">
+                            <div className="flex-shrink-0">
+                                <img
+                                    className="h-16 w-16 rounded-full object-cover"
+                                    src={user.profile.avatarUrl}
+                                    alt="Profile avatar"
+                                />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-medium text-gray-900">Current Avatar</h3>
+                                <p className="text-sm text-gray-500">Your profile picture</p>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Success message */}
                     {submitSuccess && (
                         <div className="rounded-md bg-green-50 p-4">

@@ -25,7 +25,7 @@ export class UserController {
      */
     async getProfile(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?.id; // Assuming user is attached by auth middleware
+            const userId = (req as any).user?.id; // Assuming user is attached by auth middleware
 
             if (!userId) {
                 res.status(401).json({
@@ -56,7 +56,7 @@ export class UserController {
      */
     async updateProfile(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?.id; // Assuming user is attached by auth middleware
+            const userId = (req as any).user?.id; // Assuming user is attached by auth middleware
 
             if (!userId) {
                 res.status(401).json({
@@ -111,7 +111,7 @@ export class UserController {
      */
     async getUserInfo(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?.id; // Assuming user is attached by auth middleware
+            const userId = (req as any).user?.id; // Assuming user is attached by auth middleware
 
             if (!userId) {
                 res.status(401).json({
@@ -142,7 +142,7 @@ export class UserController {
      */
     async deleteProfile(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.user?.id; // Assuming user is attached by auth middleware
+            const userId = (req as any).user?.id; // Assuming user is attached by auth middleware
 
             if (!userId) {
                 res.status(401).json({

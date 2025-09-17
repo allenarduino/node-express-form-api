@@ -8,6 +8,12 @@ export interface User {
     id: string
     email: string
     name?: string
+    profile?: {
+        name?: string
+        bio?: string
+        avatarUrl?: string
+        website?: string
+    }
 }
 
 export interface LoginCredentials {
@@ -28,6 +34,7 @@ export interface AuthContextType {
     login: (credentials: LoginCredentials) => Promise<void>
     signup: (credentials: SignupCredentials) => Promise<{ message: string }>
     logout: () => void
+    setTokenFromCallback: (token: string) => Promise<void>
 }
 
 // Create context
@@ -70,12 +77,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Fetch user profile from /me endpoint
     const fetchUserProfile = async (authToken: string) => {
         try {
-            const response = await api.get('/api/me', {
+            // Fetch basic user info
+            const userResponse = await api.get('/api/auth/me', {
                 headers: {
                     Authorization: `Bearer ${authToken}`
                 }
             })
-            setUser(response.data)
+
+            // Fetch profile data
+            const profileResponse = await api.get('/api/user/me', {
+                headers: {
+                    Authorization: `Bearer ${authToken}`
+                }
+            })
+
+            // Combine user and profile data
+            const userData = {
+                ...userResponse.data.data,
+                profile: profileResponse.data.data
+            }
+
+            setUser(userData)
         } catch (error) {
             throw new Error('Failed to fetch user profile')
         }
@@ -123,6 +145,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         navigate('/login')
     }
 
+    // Set token from OAuth callback
+    const setTokenFromCallback = async (authToken: string) => {
+        try {
+            setIsLoading(true)
+            setToken(authToken)
+            setTokenState(authToken)
+            await fetchUserProfile(authToken)
+        } catch (error) {
+            console.error('Failed to process OAuth callback:', error)
+            clearToken()
+            setTokenState(null)
+            setUser(null)
+            throw error
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     const value: AuthContextType = {
         user,
         token,
@@ -130,7 +170,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isAuthenticated,
         login,
         signup,
-        logout
+        logout,
+        setTokenFromCallback
     }
 
     return (

@@ -6,6 +6,7 @@ import { DashboardLayout } from './layouts/DashboardLayout'
 import { LandingPage } from './pages/LandingPage'
 import { SignupPage } from './pages/SignupPage'
 import { LoginPage } from './pages/LoginPage'
+import { AuthCallbackPage } from './pages/AuthCallbackPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -19,6 +20,7 @@ function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/auth/callback" element={<AuthCallbackPage />} />
                     <Route
                         path="/dashboard"
                         element={

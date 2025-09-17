@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
+import passport from 'passport';
+import jwt from 'jsonwebtoken';
 import { AuthService } from './auth.service';
 import { AuthRepository } from './auth.repository';
 import { UserRepository } from '../user/user.repository';
 import { createEmailProvider } from '../infrastructure/email';
 import { signupSchema, loginSchema, verifyEmailSchema, resendVerificationSchema, verifyTokenSchema } from './auth.validation';
+import { env } from '../config/env';
 
 /**
  * Authentication controller for handling HTTP requests
@@ -226,5 +229,60 @@ export class AuthController {
                 message: (error as Error).message,
             });
         }
+    }
+
+    /**
+     * GET /api/auth/google
+     * Initiate Google OAuth login
+     */
+    async googleLogin(req: Request, res: Response): Promise<void> {
+        passport.authenticate('google', {
+            scope: ['profile', 'email']
+        })(req, res);
+    }
+
+    /**
+     * GET /api/auth/google/callback
+     * Handle Google OAuth callback
+     */
+    googleCallback(req: Request, res: Response): void {
+        passport.authenticate('google', { session: false }, (err: any, user: any) => {
+            if (err) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Authentication failed',
+                    error: err.message,
+                });
+            }
+
+            if (!user) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Authentication failed',
+                });
+            }
+
+            try {
+                // Generate JWT token for the user
+                const payload = {
+                    sub: user.id,
+                    email: user.email,
+                };
+
+                const token = jwt.sign(payload, env.JWT_SECRET, {
+                    expiresIn: env.JWT_EXPIRES_IN,
+                } as jwt.SignOptions);
+
+                // Redirect to frontend with token
+                const frontendUrl = `${env.APP_URL.replace('4001', '5173')}/auth/callback?token=${token}`;
+                return res.redirect(frontendUrl);
+            } catch (error) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Token generation failed',
+                    error: (error as Error).message,
+                });
+            }
+        })(req, res);
     }
 }
