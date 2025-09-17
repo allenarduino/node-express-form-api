@@ -1,97 +1,252 @@
 # Express React Auth Boilerplate
 
-A full-stack application scaffold with a Node.js + TypeScript backend and React frontend.
+A complete full-stack authentication application with a Node.js + TypeScript backend and React + TypeScript frontend. Features modern dashboard UI, Google OAuth, password reset, and comprehensive user management.
+
+## Features
+
+### Authentication & Security
+- **JWT Authentication** - Secure token-based authentication
+- **Google OAuth** - Social login with Google
+- **Password Reset** - Secure email-based password reset flow
+- **Email Verification** - Account verification via email
+- **Password Hashing** - bcryptjs for secure password storage
+- **Protected Routes** - Route-level authentication guards
+
+### Frontend
+- **Modern Dashboard** - Clean, responsive dashboard with sidebar navigation
+- **User Profile Management** - Complete profile editing with avatar support
+- **Google Profile Pictures** - Automatic avatar display from Google OAuth
+- **Form Validation** - React Hook Form with Zod validation
+- **Responsive Design** - Mobile-friendly interface with Tailwind CSS
+- **Error Handling** - Comprehensive error states and user feedback
+
+### Backend
+- **RESTful API** - Well-structured API endpoints
+- **Database ORM** - Prisma with MySQL/PostgreSQL support
+- **Email Integration** - Nodemailer with multiple providers
+- **Type Safety** - Full TypeScript implementation
+- **Validation** - Zod schema validation
+- **Docker Support** - Containerized development environment
 
 ## Project Structure
 
 ```
 ├── backend/             # Node.js + TypeScript API server
-│   ├── src/            # Source code
+│   ├── src/
+│   │   ├── auth/       # Authentication logic & routes
+│   │   ├── user/       # User management
+│   │   ├── config/     # Configuration files
+│   │   ├── infrastructure/ # Email providers
+│   │   └── presentation/   # Middleware & routes
 │   ├── prisma/         # Database schema and migrations
-│   ├── scripts/        # Utility scripts
 │   └── dist/           # Compiled JavaScript (generated)
-└── frontend/           # React frontend (to be added)
+├── frontend/           # React + TypeScript frontend
+│   ├── src/
+│   │   ├── components/ # Reusable UI components
+│   │   ├── pages/      # Application pages
+│   │   ├── layouts/    # Layout components
+│   │   ├── context/    # React context providers
+│   │   ├── hooks/      # Custom React hooks
+│   │   └── lib/        # Utility libraries
+└── docker-compose.yml  # Development environment
 ```
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- Docker & Docker Compose
+- Git
+
+### 1. Clone and Setup
+```bash
+git clone <repository-url>
+cd express-react-auth-boilerplate
+```
+
+### 2. Start Development Environment
+```bash
+# Start all services (database, backend, frontend)
+docker-compose up -d
+
+# Or start services individually:
+docker-compose up -d express-react-auth-db    # Database
+docker-compose up -d express-react-auth-backend  # Backend API
+docker-compose up -d express-react-auth-frontend # Frontend
+```
+
+### 3. Setup Database (if needed)
+```bash
+# Run database migrations
+docker-compose exec backend npx prisma db push
+```
+
+### 4. Access the Application
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:4001
+- **Database**: localhost:3306 (MySQL)
+
+## Frontend
+
+The frontend is a React + TypeScript application with modern UI components and comprehensive authentication flow.
+
+### Features
+- **Modern Dashboard** - Sidebar navigation with user avatar dropdown
+- **Authentication Pages** - Login, signup, forgot password, reset password
+- **Profile Management** - Edit profile with avatar support
+- **Responsive Design** - Mobile-first approach with Tailwind CSS
+- **Form Handling** - React Hook Form with validation
+- **State Management** - React Context for authentication
+
+### Pages & Routes
+- `/` - Landing page
+- `/login` - User login
+- `/signup` - User registration
+- `/forgot-password` - Password reset request
+- `/reset-password` - Password reset with token
+- `/dashboard` - Main dashboard (protected)
+- `/dashboard/profile` - User profile (protected)
+- `/dashboard/settings` - User settings (protected)
 
 ## Backend
 
-The backend is a Node.js + TypeScript API server with Express, Prisma, and authentication utilities.
+The backend is a Node.js + TypeScript API server with Express, Prisma, and comprehensive authentication features.
 
-### Features
+### API Endpoints
 
-- **Express.js** - Web framework
-- **TypeScript** - Type-safe JavaScript
-- **Prisma** - Database ORM
-- **Authentication** - JWT + bcryptjs
-- **Validation** - Zod schema validation
-- **Email** - Nodemailer integration
-- **Environment** - dotenv configuration
+#### Authentication
+- `POST /api/auth/signup` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/forgot-password` - Request password reset
+- `POST /api/auth/reset-password` - Reset password with token
+- `GET /api/auth/verify` - Verify email address
+- `POST /api/auth/resend-verification` - Resend verification email
+- `GET /api/auth/me` - Get current user info
+- `GET /api/auth/google` - Google OAuth login
+- `GET /api/auth/google/callback` - Google OAuth callback
 
-### Getting Started
-
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-4. Set up the database:
-   ```bash
-   npm run prisma:dev
-   ```
+#### User Management
+- `GET /api/user/me` - Get user profile
+- `PUT /api/user/me` - Update user profile
+- `GET /api/user/info` - Get user basic info
 
 ### Development
 
-Start the development server:
 ```bash
+# Backend development
 cd backend
+npm install
+npm run dev
+
+# Frontend development  
+cd frontend
+npm install
 npm run dev
 ```
 
-The server will start on `http://localhost:3000` (or the PORT specified in your .env file).
+## Environment Variables
 
-### Building
+### Backend (.env)
+```env
+NODE_ENV=development
+PORT=4001
+DATABASE_URL="mysql://root:password@express-react-auth-db:3306/express_react_auth"
+JWT_SECRET="your-super-secret-jwt-key"
+JWT_EXPIRES_IN="7d"
+APP_URL="http://localhost:4001"
 
-Build the project:
-```bash
-cd backend
-npm run build
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# Email Configuration
+EMAIL_PROVIDER="console" # console, smtp, or resend
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+RESEND_API_KEY="your-resend-api-key"
 ```
 
-Start the production server:
+### Frontend (.env)
+```env
+VITE_API_URL=http://localhost:4001
+```
+
+## Docker Development
+
+The project includes Docker Compose for easy development setup:
+
 ```bash
-cd backend
-npm start
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Rebuild services
+docker-compose up -d --build
 ```
 
 ## Available Scripts
 
-- `cd backend && npm run dev` - Start development server with hot reload
-- `cd backend && npm run build` - Compile TypeScript to JavaScript
-- `cd backend && npm start` - Start production server
-- `cd backend && npm run prisma:dev` - Run Prisma migrations
+### Backend
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm start` - Start production server
+- `npm run prisma:generate` - Generate Prisma client
+- `npm run prisma:push` - Push schema changes to database
+- `npm run prisma:migrate` - Run database migrations
 
-## Environment Variables
+### Frontend
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
 
-Create a `.env` file in the `backend/` directory with the following variables:
+## Deployment
 
-```env
-NODE_ENV=development
-PORT=3000
-DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
-JWT_SECRET="your-jwt-secret"
+### Production Build
+```bash
+# Build backend
+cd backend && npm run build
+
+# Build frontend
+cd frontend && npm run build
+
+# Start production
+docker-compose -f docker-compose.prod.yml up -d
 ```
+
+## Testing
+
+```bash
+# Backend tests
+cd backend && npm test
+
+# Frontend tests
+cd frontend && npm test
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
 ## License
 
-Private project - All rights reserved.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Express.js](https://expressjs.com/) - Web framework
+- [React](https://reactjs.org/) - Frontend library
+- [Prisma](https://www.prisma.io/) - Database ORM
+- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
