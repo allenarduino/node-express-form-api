@@ -139,4 +139,13 @@
   .space-y-section-lg > * + * {
     @apply mt-16;
   }
+  
+  /* Primary color system */
+  .primary-light {
+    @apply bg-blue-100 text-blue-800;
+  }
+  
+  .primary-dark {
+    @apply bg-blue-600 text-white;
+  }
 }
