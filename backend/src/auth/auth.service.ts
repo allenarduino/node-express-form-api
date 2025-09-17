@@ -196,4 +196,67 @@ export class AuthService {
             emailHtml
         );
     }
+
+    /**
+     * Request password reset for user
+     * @param email - User's email address
+     * @returns Promise<void>
+     * @throws Error if user not found
+     */
+    async requestPasswordReset(email: string): Promise<void> {
+        const user = await this.authRepo.findByEmail(email);
+        if (!user) {
+            // Don't reveal if user exists or not for security
+            return;
+        }
+
+        // Generate password reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        // Save reset token to database
+        await this.authRepo.setPasswordResetToken(user.id, resetToken, resetTokenExpires);
+
+        // Send password reset email
+        const resetLink = `${env.APP_URL}/reset-password?token=${resetToken}`;
+        const emailHtml = `
+            <h1>Password Reset Request</h1>
+            <p>You requested a password reset for your account. Click the link below to reset your password:</p>
+            <a href="${resetLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+            <p>This link will expire in 1 hour.</p>
+            <p>If you didn't request this password reset, please ignore this email.</p>
+        `;
+
+        await this.emailProvider.send(
+            email,
+            'Password Reset Request',
+            emailHtml
+        );
+    }
+
+    /**
+     * Reset user's password using reset token
+     * @param resetToken - The password reset token
+     * @param newPassword - The new password
+     * @returns Promise<{ id: string; email: string }> - User info
+     * @throws Error if token is invalid or expired
+     */
+    async resetPassword(resetToken: string, newPassword: string): Promise<{ id: string; email: string }> {
+        // Find user by reset token
+        const user = await this.authRepo.findByPasswordResetToken(resetToken);
+        if (!user) {
+            throw new Error('Invalid or expired reset token');
+        }
+
+        // Hash the new password
+        const passwordHash = await bcrypt.hash(newPassword, 12);
+
+        // Update password and clear reset token
+        const updatedUser = await this.authRepo.updatePassword(user.id, passwordHash);
+
+        return {
+            id: updatedUser.id,
+            email: updatedUser.email,
+        };
+    }
 }

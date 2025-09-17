@@ -214,4 +214,54 @@ export class AuthRepository {
             },
         });
     }
+
+    /**
+     * Set password reset token for user
+     * @param userId - The user ID to set reset token for
+     * @param resetToken - The password reset token
+     * @param resetExpires - When the token expires
+     * @returns Promise<User> - The updated user
+     */
+    async setPasswordResetToken(userId: string, resetToken: string, resetExpires: Date): Promise<User> {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                passwordResetToken: resetToken,
+                passwordResetExpires: resetExpires,
+            },
+        });
+    }
+
+    /**
+     * Find user by password reset token
+     * @param resetToken - The password reset token to search for
+     * @returns Promise<User | null> - The user if found and token is valid, null otherwise
+     */
+    async findByPasswordResetToken(resetToken: string): Promise<User | null> {
+        return this.prisma.user.findFirst({
+            where: {
+                passwordResetToken: resetToken,
+                passwordResetExpires: {
+                    gt: new Date(), // Token must not be expired
+                },
+            },
+        });
+    }
+
+    /**
+     * Update user's password and clear reset token
+     * @param userId - The user ID to update password for
+     * @param passwordHash - The new hashed password
+     * @returns Promise<User> - The updated user
+     */
+    async updatePassword(userId: string, passwordHash: string): Promise<User> {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                passwordHash,
+                passwordResetToken: null,
+                passwordResetExpires: null,
+            },
+        });
+    }
 }

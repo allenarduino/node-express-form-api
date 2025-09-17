@@ -15,6 +15,8 @@ export function createAuthRoutes(authController?: AuthController): Router {
     const login = controller.login.bind(controller);
     const verifyToken = controller.verifyToken.bind(controller);
     const resendVerification = controller.resendVerification.bind(controller);
+    const forgotPassword = controller.forgotPassword.bind(controller);
+    const resetPassword = controller.resetPassword.bind(controller);
     const getMe = controller.getMe.bind(controller);
     const googleLogin = controller.googleLogin.bind(controller);
     const googleCallback = controller.googleCallback.bind(controller);
@@ -25,6 +27,8 @@ export function createAuthRoutes(authController?: AuthController): Router {
     router.post('/login', login);
     router.post('/verify-token', verifyToken);
     router.post('/resend-verification', resendVerification);
+    router.post('/forgot-password', forgotPassword);
+    router.post('/reset-password', resetPassword);
 
     // Google OAuth routes
     router.get('/google', googleLogin);

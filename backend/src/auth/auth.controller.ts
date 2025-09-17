@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { AuthRepository } from './auth.repository';
 import { UserRepository } from '../user/user.repository';
 import { createEmailProvider } from '../infrastructure/email';
-import { signupSchema, loginSchema, verifyEmailSchema, resendVerificationSchema, verifyTokenSchema } from './auth.validation';
+import { signupSchema, loginSchema, verifyEmailSchema, resendVerificationSchema, verifyTokenSchema, passwordResetRequestSchema, passwordResetSchema } from './auth.validation';
 import { env } from '../config/env';
 
 /**
@@ -305,5 +305,80 @@ export class AuthController {
                 });
             }
         })(req, res);
+    }
+
+    /**
+     * POST /api/auth/forgot-password
+     * Request password reset
+     */
+    async forgotPassword(req: Request, res: Response): Promise<void> {
+        try {
+            // Validate input with Zod
+            const validationResult = passwordResetRequestSchema.safeParse(req.body);
+            if (!validationResult.success) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Validation failed',
+                    errors: validationResult.error.issues.map((err: any) => ({
+                        field: err.path.join('.'),
+                        message: err.message,
+                    })),
+                });
+                return;
+            }
+
+            const { email } = validationResult.data;
+            await this.authService.requestPasswordReset(email);
+
+            // Always return success for security (don't reveal if user exists)
+            res.status(200).json({
+                success: true,
+                message: 'If an account with that email exists, a password reset link has been sent.',
+            });
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+                message: (error as Error).message,
+            });
+        }
+    }
+
+    /**
+     * POST /api/auth/reset-password
+     * Reset password using reset token
+     */
+    async resetPassword(req: Request, res: Response): Promise<void> {
+        try {
+            // Validate input with Zod
+            const validationResult = passwordResetSchema.safeParse(req.body);
+            if (!validationResult.success) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Validation failed',
+                    errors: validationResult.error.issues.map((err: any) => ({
+                        field: err.path.join('.'),
+                        message: err.message,
+                    })),
+                });
+                return;
+            }
+
+            const { token, password } = validationResult.data;
+            const user = await this.authService.resetPassword(token, password);
+
+            res.status(200).json({
+                success: true,
+                message: 'Password reset successfully',
+                data: {
+                    id: user.id,
+                    email: user.email,
+                },
+            });
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+                message: (error as Error).message,
+            });
+        }
     }
 }

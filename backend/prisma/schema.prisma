@@ -15,6 +15,10 @@ model User {
   verificationToken        String?
   verificationTokenExpires DateTime?
   
+  // Password reset fields
+  passwordResetToken       String?
+  passwordResetExpires     DateTime?
+  
   // Google OAuth fields
   googleId                 String?  @unique
   googleEmail              String?
