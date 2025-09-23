@@ -5,18 +5,22 @@ import { config } from 'dotenv';
 import { createAuthRoutes } from './auth';
 import { createUserRoutes } from './user';
 import { createFormRoutes } from './form';
+import { createSubmissionRoutes } from './submission';
 import { prisma } from './config/prisma';
 import { env } from './config/env';
 import { createEmailProvider } from './infrastructure/email';
 import { AuthService } from './auth/auth.service';
 import { UserService } from './user/user.service';
 import { FormService } from './form/form.service';
+import { SubmissionService } from './submission/submission.service';
 import { AuthRepository } from './auth/auth.repository';
 import { UserRepository } from './user/user.repository';
 import { FormRepository } from './form/form.repository';
+import { SubmissionRepository } from './submission/submission.repository';
 import { AuthController } from './auth/auth.controller';
 import { UserController } from './user/user.controller';
 import { FormController } from './form/form.controller';
+import { SubmissionController } from './submission/submission.controller';
 import { configureGoogleStrategy } from './auth/google.strategy';
 
 // Load environment variables
@@ -42,6 +46,7 @@ app.use(cors({
 const authRepository = new AuthRepository(prisma);
 const userRepository = new UserRepository(prisma);
 const formRepository = new FormRepository(prisma);
+const submissionRepository = new SubmissionRepository(prisma);
 
 // Initialize email provider based on environment
 const emailProvider = createEmailProvider();
@@ -50,11 +55,13 @@ const emailProvider = createEmailProvider();
 const authService = new AuthService(authRepository, userRepository, emailProvider);
 const userService = new UserService(userRepository);
 const formService = new FormService(formRepository);
+const submissionService = new SubmissionService(submissionRepository, formRepository);
 
 // Initialize controllers with services
 const authController = new AuthController(authService);
 const userController = new UserController(userService);
 const formController = new FormController(formService);
+const submissionController = new SubmissionController(submissionService);
 
 // Initialize Passport and Google OAuth strategy
 configureGoogleStrategy();
@@ -79,6 +86,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/auth', createAuthRoutes(authController));
 app.use('/api/user', createUserRoutes(userController));
 app.use('/api/forms', createFormRoutes(formController));
+app.use('/api', createSubmissionRoutes(submissionController));
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
@@ -89,6 +97,7 @@ app.get('/', (req: Request, res: Response) => {
             auth: '/api/auth',
             user: '/api/user',
             forms: '/api/forms',
+            submissions: '/api',
             health: '/health'
         }
     });
@@ -166,6 +175,11 @@ const server = app.listen(PORT, () => {
     console.log('  PUT  /api/forms/:id - Update form (protected)');
     console.log('  DELETE /api/forms/:id - Delete form (protected)');
     console.log('  GET  /api/forms/slug/:endpointSlug - Get form by slug (public)');
+    console.log('  POST /api/forms/:endpointSlug/submit - Submit to form (public)');
+    console.log('  GET  /api/submissions/:id - Get submission by ID (protected)');
+    console.log('  GET  /api/forms/:formId/submissions - Get form submissions (protected)');
+    console.log('  GET  /api/user/submissions - Get user submissions (protected)');
+    console.log('  PUT  /api/submissions/:id - Update submission status (protected)');
     console.log('====================================');
 });
 
