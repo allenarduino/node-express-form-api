@@ -2,7 +2,7 @@ import { SubmissionRepository } from './submission.repository';
 import { FormRepository } from '../form/form.repository';
 import { Submission, Form } from '@prisma/client';
 import { CreateSubmissionInput, FormSettings } from './submission.validation';
-import { jobQueue } from '../jobs';
+import { addEmailJob, addWebhookJob } from '../queue/queueConfig';
 
 /**
  * Submission service for business logic operations
@@ -39,8 +39,8 @@ export class SubmissionService {
         const submission = await this.submissionRepo.create({
             formId: '', // Will be set by controller
             payload: data.formData,
-            name: data.name,
-            email: data.email,
+            ...(data.name && { name: data.name }),
+            ...(data.email && { email: data.email }),
             ip,
             userAgent,
             status: 'new',
@@ -91,8 +91,8 @@ export class SubmissionService {
         const submission = await this.submissionRepo.create({
             formId: form.id,
             payload: data.formData,
-            name: data.name,
-            email: data.email,
+            ...(data.name && { name: data.name }),
+            ...(data.email && { email: data.email }),
             ip,
             userAgent,
             status: 'new',
@@ -246,7 +246,18 @@ export class SubmissionService {
             return;
         }
 
-        await jobQueue.queueEmailNotification(submission, form, settings.notificationEmail);
+        try {
+            await addEmailJob({
+                submissionId: submission.id,
+                formId: form.id,
+                notificationEmail: settings.notificationEmail,
+                submissionData: submission,
+                formData: form,
+            });
+            console.log(`Email notification job queued for submission ${submission.id}`);
+        } catch (error) {
+            console.error(`Failed to queue email notification for submission ${submission.id}:`, error);
+        }
     }
 
     /**
@@ -259,7 +270,19 @@ export class SubmissionService {
 
         // Check if webhook URL is configured in settings
         if (settings?.webhookUrl) {
-            await jobQueue.queueWebhook(submission, form, settings.webhookUrl, settings.webhookSecret);
+            try {
+                await addWebhookJob({
+                    submissionId: submission.id,
+                    formId: form.id,
+                    webhookUrl: settings.webhookUrl,
+                    ...(settings.webhookSecret && { webhookSecret: settings.webhookSecret }),
+                    submissionData: submission,
+                    formData: form,
+                });
+                console.log(`Webhook job queued for submission ${submission.id}`);
+            } catch (error) {
+                console.error(`Failed to queue webhook for submission ${submission.id}:`, error);
+            }
         }
     }
 }

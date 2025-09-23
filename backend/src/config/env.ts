@@ -30,6 +30,12 @@ interface EnvConfig {
     // Google OAuth
     GOOGLE_CLIENT_ID: string;
     GOOGLE_CLIENT_SECRET: string;
+
+    // Redis
+    REDIS_HOST: string;
+    REDIS_PORT: string;
+    REDIS_DB: string;
+    REDIS_PASSWORD?: string;
 }
 
 // Validate required environment variables
@@ -76,6 +82,12 @@ export const env: EnvConfig = {
     // Google OAuth
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+
+    // Redis
+    REDIS_HOST: process.env.REDIS_HOST || 'localhost',
+    REDIS_PORT: process.env.REDIS_PORT || '6379',
+    REDIS_DB: process.env.REDIS_DB || '0',
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
 };
 
 // Export individual constants for convenience

@@ -28,6 +28,8 @@ export const formSettingsSchema = z.object({
     redirectUrl: z.string().url().optional(),
     customCss: z.string().optional(),
     customJs: z.string().optional(),
+    webhookUrl: z.string().url().optional(),
+    webhookSecret: z.string().optional(),
     spamProtection: z.object({
         enabled: z.boolean().default(true),
         honeypot: z.boolean().default(true),
