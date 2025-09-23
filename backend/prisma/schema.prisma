@@ -8,10 +8,10 @@ generator client {
 }
 
 model User {
-  id                       String   @id @default(uuid())
-  email                    String   @unique
-  passwordHash             String?  // Made optional for OAuth users
-  isEmailVerified          Boolean  @default(false)
+  id                       String    @id @default(uuid())
+  email                    String    @unique
+  passwordHash             String?   // Made optional for OAuth users
+  isEmailVerified          Boolean   @default(false)
   verificationToken        String?
   verificationTokenExpires DateTime?
   
@@ -20,18 +20,21 @@ model User {
   passwordResetExpires     DateTime?
   
   // Google OAuth fields
-  googleId                 String?  @unique
+  googleId                 String?   @unique
   googleEmail              String?
   googleName               String?
   googlePicture            String?
   
   // Authentication method
-  authProvider             String   @default("email") // "email" or "google"
+  authProvider             String    @default("email") // "email" or "google"
   
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
-  profile Profile?
+  profile    Profile?
+  forms      Form[]
+  apiKeys    ApiKey[]
+  submissions Submission[]
 }
 
 model Profile {
@@ -45,4 +48,62 @@ model Profile {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Form {
+  id           String    @id @default(uuid())
+  userId       String
+  name         String
+  description  String?
+  endpointSlug String    @unique
+  settings     Json      @default("{}") // Spam, notifications, custom fields, etc.
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+}
+
+model Submission {
+  id          String   @id @default(uuid())
+  formId      String
+  userId      String?  // Optional if submission is anonymous
+  payload     Json
+  name        String?
+  email       String?
+  ip          String?
+  userAgent   String?
+  status      String   @default("new") // new | read | responded
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  form        Form      @relation(fields: [formId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  attachments Attachment[]
+}
+
+model Attachment {
+  id            String   @id @default(uuid())
+  submissionId  String
+  filePath      String
+  originalName  String
+  mime          String
+  size          Int
+  createdAt     DateTime @default(now())
+
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  tokenHash String
+  abilities Json     @default("[]") // e.g., ["read_forms", "submit"]
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
