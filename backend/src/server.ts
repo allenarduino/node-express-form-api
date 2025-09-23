@@ -4,15 +4,19 @@ import passport from 'passport';
 import { config } from 'dotenv';
 import { createAuthRoutes } from './auth';
 import { createUserRoutes } from './user';
+import { createFormRoutes } from './form';
 import { prisma } from './config/prisma';
 import { env } from './config/env';
 import { createEmailProvider } from './infrastructure/email';
 import { AuthService } from './auth/auth.service';
 import { UserService } from './user/user.service';
+import { FormService } from './form/form.service';
 import { AuthRepository } from './auth/auth.repository';
 import { UserRepository } from './user/user.repository';
+import { FormRepository } from './form/form.repository';
 import { AuthController } from './auth/auth.controller';
 import { UserController } from './user/user.controller';
+import { FormController } from './form/form.controller';
 import { configureGoogleStrategy } from './auth/google.strategy';
 
 // Load environment variables
@@ -37,6 +41,7 @@ app.use(cors({
 // Initialize repositories with Prisma instance
 const authRepository = new AuthRepository(prisma);
 const userRepository = new UserRepository(prisma);
+const formRepository = new FormRepository(prisma);
 
 // Initialize email provider based on environment
 const emailProvider = createEmailProvider();
@@ -44,10 +49,12 @@ const emailProvider = createEmailProvider();
 // Initialize services with dependencies
 const authService = new AuthService(authRepository, userRepository, emailProvider);
 const userService = new UserService(userRepository);
+const formService = new FormService(formRepository);
 
 // Initialize controllers with services
 const authController = new AuthController(authService);
 const userController = new UserController(userService);
+const formController = new FormController(formService);
 
 // Initialize Passport and Google OAuth strategy
 configureGoogleStrategy();
@@ -71,6 +78,7 @@ app.get('/health', (req: Request, res: Response) => {
 // API routes
 app.use('/api/auth', createAuthRoutes(authController));
 app.use('/api/user', createUserRoutes(userController));
+app.use('/api/forms', createFormRoutes(formController));
 
 // Root route
 app.get('/', (req: Request, res: Response) => {
@@ -80,6 +88,7 @@ app.get('/', (req: Request, res: Response) => {
         endpoints: {
             auth: '/api/auth',
             user: '/api/user',
+            forms: '/api/forms',
             health: '/health'
         }
     });
@@ -151,6 +160,12 @@ const server = app.listen(PORT, () => {
     console.log('  GET  /api/auth/me - Get current user (protected)');
     console.log('  GET  /api/user/me - Get user profile (protected)');
     console.log('  PUT  /api/user/me/profile - Update profile (protected)');
+    console.log('  GET  /api/forms - Get all forms (protected)');
+    console.log('  POST /api/forms - Create form (protected)');
+    console.log('  GET  /api/forms/:id - Get form by ID (protected)');
+    console.log('  PUT  /api/forms/:id - Update form (protected)');
+    console.log('  DELETE /api/forms/:id - Delete form (protected)');
+    console.log('  GET  /api/forms/slug/:endpointSlug - Get form by slug (public)');
     console.log('====================================');
 });
 
