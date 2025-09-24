@@ -9,6 +9,8 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { AuthCallbackPage } from './pages/AuthCallbackPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { FormsPage } from './pages/FormsPage'
+import { FormBuilderPage } from './pages/FormBuilderPage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
 
@@ -31,6 +33,30 @@ function AppContent() {
                     element={
                         <RequireAuth>
                             <DashboardPage />
+                        </RequireAuth>
+                    }
+                />
+                <Route
+                    path="/forms"
+                    element={
+                        <RequireAuth>
+                            <FormsPage />
+                        </RequireAuth>
+                    }
+                />
+                <Route
+                    path="/forms/new"
+                    element={
+                        <RequireAuth>
+                            <FormBuilderPage />
+                        </RequireAuth>
+                    }
+                />
+                <Route
+                    path="/forms/:id/edit"
+                    element={
+                        <RequireAuth>
+                            <FormBuilderPage />
                         </RequireAuth>
                     }
                 />

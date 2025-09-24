@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { StatCard } from '../components/dashboard/StatCard';
 import { RecentFormsTable } from '../components/dashboard/RecentFormsTable';
@@ -78,6 +79,15 @@ export function DashboardPage() {
 
                 {/* Recent Forms Table */}
                 <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-medium text-gray-900">Recent Forms</h2>
+                        <Link
+                            to="/forms"
+                            className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+                        >
+                            View all forms →
+                        </Link>
+                    </div>
                     <RecentFormsTable
                         forms={data?.recentForms || []}
                         isLoading={loading}
