@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 import { emailQueue, webhookQueue, JobType, closeQueues } from './queue/queueConfig';
 import { SendNotificationEmailJob } from './queue/jobs/sendNotificationEmailJob';
 import { DispatchWebhookJob } from './queue/jobs/dispatchWebhookJob';
+import { SendAutoReplyEmailJob } from './queue/jobs/sendAutoReplyEmailJob';
 
 // Load environment variables
 config();
@@ -15,11 +16,13 @@ config();
 class QueueWorker {
     private emailJobProcessor: SendNotificationEmailJob;
     private webhookJobProcessor: DispatchWebhookJob;
+    private autoReplyJobProcessor: SendAutoReplyEmailJob;
     private isShuttingDown = false;
 
     constructor() {
         this.emailJobProcessor = new SendNotificationEmailJob();
         this.webhookJobProcessor = new DispatchWebhookJob();
+        this.autoReplyJobProcessor = new SendAutoReplyEmailJob();
     }
 
     /**
@@ -34,6 +37,12 @@ class QueueWorker {
         emailQueue.process(JobType.SEND_NOTIFICATION_EMAIL, async (job) => {
             console.log(`📧 Processing email job ${job.id}`);
             return this.emailJobProcessor.process(job);
+        });
+
+        // Process auto-reply email jobs
+        emailQueue.process(JobType.SEND_AUTO_REPLY_EMAIL, async (job) => {
+            console.log(`📧 Processing auto-reply email job ${job.id}`);
+            return this.autoReplyJobProcessor.process(job);
         });
 
         // Process webhook jobs

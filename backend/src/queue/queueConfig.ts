@@ -72,6 +72,7 @@ export function createQueue(queueName: string): Bull.Queue {
 export enum JobType {
     SEND_NOTIFICATION_EMAIL = 'send-notification-email',
     DISPATCH_WEBHOOK = 'dispatch-webhook',
+    SEND_AUTO_REPLY_EMAIL = 'send-auto-reply-email',
 }
 
 /**
@@ -90,6 +91,14 @@ export interface DispatchWebhookData {
     formId: string;
     webhookUrl: string;
     webhookSecret?: string;
+    submissionData: any;
+    formData: any;
+}
+
+export interface SendAutoReplyEmailData {
+    submissionId: string;
+    formId: string;
+    submitterEmail: string;
     submissionData: any;
     formData: any;
 }
@@ -122,6 +131,18 @@ export async function addWebhookJob(
     options?: Bull.JobOptions
 ): Promise<Bull.Job> {
     return webhookQueue.add(JobType.DISPATCH_WEBHOOK, data, options);
+}
+
+/**
+ * Add auto-reply email job to email queue
+ * @param data - Auto-reply email job data
+ * @param options - Optional job options
+ */
+export async function addAutoReplyEmailJob(
+    data: SendAutoReplyEmailData,
+    options?: Bull.JobOptions
+): Promise<Bull.Job> {
+    return emailQueue.add(JobType.SEND_AUTO_REPLY_EMAIL, data, options);
 }
 
 /**

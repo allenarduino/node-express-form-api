@@ -1,11 +1,11 @@
 import { Job } from 'bull';
-import { SendNotificationEmailData } from '../queueConfig';
+import { SendAutoReplyEmailData } from '../queueConfig';
 import { MailerService, EmailTemplateData } from '../../services/mailerService';
 
 /**
- * Send notification email job processor
+ * Send auto-reply email job processor
  */
-export class SendNotificationEmailJob {
+export class SendAutoReplyEmailJob {
     private mailerService: MailerService;
 
     constructor(mailerService?: MailerService) {
@@ -13,14 +13,14 @@ export class SendNotificationEmailJob {
     }
 
     /**
-     * Process email notification job
+     * Process auto-reply email job
      * @param job - Bull job instance
      */
-    async process(job: Job<SendNotificationEmailData>): Promise<void> {
-        const { submissionId, formId, notificationEmail, submissionData, formData } = job.data;
+    async process(job: Job<SendAutoReplyEmailData>): Promise<void> {
+        const { submissionId, formId, submitterEmail, submissionData, formData } = job.data;
 
         try {
-            console.log(`Processing email notification job for submission ${submissionId}`);
+            console.log(`Processing auto-reply email job for submission ${submissionId}`);
 
             // Prepare template data
             const templateData: EmailTemplateData = {
@@ -35,11 +35,11 @@ export class SendNotificationEmailJob {
                 fields: this.prepareFieldsData(submissionData.payload, formData.settings),
             };
 
-            await this.mailerService.sendFormNotificationEmail(notificationEmail, templateData);
+            await this.mailerService.sendAutoReplyEmail(submitterEmail, templateData);
 
-            console.log(`Email notification sent successfully for submission ${submissionId}`);
+            console.log(`Auto-reply email sent successfully for submission ${submissionId}`);
         } catch (error) {
-            console.error(`Failed to send email notification for submission ${submissionId}:`, error);
+            console.error(`Failed to send auto-reply email for submission ${submissionId}:`, error);
             throw error; // Re-throw to trigger retry mechanism
         }
     }

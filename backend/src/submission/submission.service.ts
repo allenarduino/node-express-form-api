@@ -2,7 +2,7 @@ import { SubmissionRepository } from './submission.repository';
 import { FormRepository } from '../form/form.repository';
 import { Submission, Form } from '@prisma/client';
 import { CreateSubmissionInput, FormSettings } from './submission.validation';
-import { addEmailJob, addWebhookJob } from '../queue/queueConfig';
+import { addEmailJob, addWebhookJob, addAutoReplyEmailJob } from '../queue/queueConfig';
 
 /**
  * Submission service for business logic operations
@@ -97,6 +97,22 @@ export class SubmissionService {
             userAgent,
             status: 'new',
         });
+
+        // Queue email notification if enabled
+        const settings = form.settings as FormSettings;
+        if (settings?.requireEmailNotification && settings?.notificationEmail) {
+            await this.queueEmailNotification(submission, form);
+        }
+
+        // Queue auto-reply email if submitter provided email
+        if (data.email) {
+            await this.queueAutoReplyEmail(submission, form);
+        }
+
+        // Queue webhook if configured
+        if (settings?.webhookUrl) {
+            await this.queueWebhook(submission, form);
+        }
 
         return submission;
     }
@@ -257,6 +273,30 @@ export class SubmissionService {
             console.log(`Email notification job queued for submission ${submission.id}`);
         } catch (error) {
             console.error(`Failed to queue email notification for submission ${submission.id}:`, error);
+        }
+    }
+
+    /**
+     * Queue auto-reply email job
+     * @param submission - The submission
+     * @param form - The form
+     */
+    async queueAutoReplyEmail(submission: Submission, form: Form): Promise<void> {
+        if (!submission.email) {
+            return;
+        }
+
+        try {
+            await addAutoReplyEmailJob({
+                submissionId: submission.id,
+                formId: form.id,
+                submitterEmail: submission.email,
+                submissionData: submission,
+                formData: form,
+            });
+            console.log(`Auto-reply email job queued for submission ${submission.id}`);
+        } catch (error) {
+            console.error(`Failed to queue auto-reply email for submission ${submission.id}:`, error);
         }
     }
 
