@@ -17,11 +17,14 @@ export class FormService {
     async create(data: {
         name: string;
         description?: string | null;
-        endpointSlug: string;
+        endpointSlug?: string;
         settings?: any;
     }, userId: string): Promise<Form> {
+        // Generate endpoint slug if not provided
+        const endpointSlug = data.endpointSlug || await this.generateUniqueEndpointSlug(data.name, userId);
+
         // Check if endpoint slug is available
-        const isSlugAvailable = await this.formRepo.isEndpointSlugAvailable(data.endpointSlug);
+        const isSlugAvailable = await this.formRepo.isEndpointSlugAvailable(endpointSlug);
         if (!isSlugAvailable) {
             throw new Error('Endpoint slug is already taken');
         }
@@ -29,6 +32,7 @@ export class FormService {
         try {
             return await this.formRepo.create({
                 ...data,
+                endpointSlug,
                 ...(data.description !== undefined && { description: data.description || null }),
                 userId,
             });

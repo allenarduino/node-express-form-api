@@ -104,9 +104,16 @@ export class FormController {
                 return;
             }
 
-            const formData = {
-                ...validationResult.data,
+            const formData: {
+                name: string;
+                description?: string | null;
+                endpointSlug?: string;
+                settings?: any;
+            } = {
+                name: validationResult.data.name,
                 description: validationResult.data.description || null,
+                ...(validationResult.data.endpointSlug && { endpointSlug: validationResult.data.endpointSlug }),
+                ...(validationResult.data.settings && { settings: validationResult.data.settings }),
             };
             const form = await this.formService.create(formData, userId);
 

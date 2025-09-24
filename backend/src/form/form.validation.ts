@@ -41,7 +41,8 @@ export const createFormSchema = z.object({
         .min(3, 'Endpoint slug must be at least 3 characters')
         .max(50, 'Endpoint slug must be less than 50 characters')
         .regex(/^[a-z0-9-]+$/, 'Endpoint slug can only contain lowercase letters, numbers, and hyphens')
-        .refine((slug) => !slug.startsWith('-') && !slug.endsWith('-'), 'Endpoint slug cannot start or end with hyphens'),
+        .refine((slug) => !slug.startsWith('-') && !slug.endsWith('-'), 'Endpoint slug cannot start or end with hyphens')
+        .optional(),
     settings: formSettingsSchema.optional(),
 });
 
