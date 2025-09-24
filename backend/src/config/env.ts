@@ -91,11 +91,11 @@ export const env: EnvConfig = {
     REDIS_HOST: process.env.REDIS_HOST || 'localhost',
     REDIS_PORT: process.env.REDIS_PORT || '6379',
     REDIS_DB: process.env.REDIS_DB || '0',
-    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+    ...(process.env.REDIS_PASSWORD && { REDIS_PASSWORD: process.env.REDIS_PASSWORD }),
 
     // reCAPTCHA
-    RECAPTCHA_SECRET_KEY: process.env.RECAPTCHA_SECRET_KEY,
-    RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY,
+    ...(process.env.RECAPTCHA_SECRET_KEY && { RECAPTCHA_SECRET_KEY: process.env.RECAPTCHA_SECRET_KEY }),
+    ...(process.env.RECAPTCHA_SITE_KEY && { RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY }),
 };
 
 // Export individual constants for convenience

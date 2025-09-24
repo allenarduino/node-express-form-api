@@ -18,12 +18,17 @@ export class DispatchWebhookJob {
             const payload = this.generateWebhookPayload(submissionData, formData);
             const headers = this.generateHeaders(payload, webhookSecret);
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
             const response = await fetch(webhookUrl, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(payload),
-                timeout: 30000, // 30 second timeout
+                signal: controller.signal,
             });
+
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 throw new Error(`Webhook failed with status ${response.status}: ${response.statusText}`);

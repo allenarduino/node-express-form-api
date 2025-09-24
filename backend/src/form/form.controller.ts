@@ -55,7 +55,6 @@ export class FormController {
                         isActive: form.isActive,
                         createdAt: form.createdAt,
                         updatedAt: form.updatedAt,
-                        user: form.user,
                         submissionCount: (form as any)._count?.submissions || 0,
                     })),
                     pagination: {
@@ -105,7 +104,10 @@ export class FormController {
                 return;
             }
 
-            const formData = validationResult.data;
+            const formData = {
+                ...validationResult.data,
+                description: validationResult.data.description || null,
+            };
             const form = await this.formService.create(formData, userId);
 
             res.status(201).json({
@@ -168,7 +170,6 @@ export class FormController {
                     isActive: form.isActive,
                     createdAt: form.createdAt,
                     updatedAt: form.updatedAt,
-                    user: form.user,
                     submissionCount: (form as any)._count?.submissions || 0,
                 },
             });
@@ -280,7 +281,19 @@ export class FormController {
                 return;
             }
 
-            const updateData = validationResult.data;
+            const updateData: Partial<{
+                name: string;
+                description: string | null;
+                endpointSlug: string;
+                settings: any;
+                isActive: boolean;
+            }> = {};
+
+            if (validationResult.data.name !== undefined) updateData.name = validationResult.data.name;
+            if (validationResult.data.description !== undefined) updateData.description = validationResult.data.description || null;
+            if (validationResult.data.endpointSlug !== undefined) updateData.endpointSlug = validationResult.data.endpointSlug;
+            if (validationResult.data.settings !== undefined) updateData.settings = validationResult.data.settings;
+            if (validationResult.data.isActive !== undefined) updateData.isActive = validationResult.data.isActive;
             const form = await this.formService.update(id, updateData, userId);
 
             res.status(200).json({

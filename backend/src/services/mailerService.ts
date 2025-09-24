@@ -47,7 +47,7 @@ export class MailerService {
      */
     private createTransporter(): nodemailer.Transporter {
         if (env.EMAIL_PROVIDER === 'smtp') {
-            return nodemailer.createTransporter({
+            return nodemailer.createTransport({
                 host: env.SMTP_HOST,
                 port: env.SMTP_PORT,
                 secure: env.SMTP_PORT === 465,
@@ -58,7 +58,7 @@ export class MailerService {
             });
         } else {
             // For Resend or other providers, use SMTP with their settings
-            return nodemailer.createTransporter({
+            return nodemailer.createTransport({
                 host: 'smtp.resend.com',
                 port: 587,
                 secure: false,

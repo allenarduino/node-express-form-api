@@ -33,10 +33,10 @@ export class EnhancedRateLimit {
 
     constructor(config: RateLimitConfig) {
         this.config = {
-            windowMs: 15 * 60 * 1000, // 15 minutes default
-            maxRequests: 100, // 100 requests default
-            message: 'Too many requests, please try again later.',
             ...config,
+            windowMs: config.windowMs || 15 * 60 * 1000, // 15 minutes default
+            maxRequests: config.maxRequests || 100, // 100 requests default
+            message: config.message || 'Too many requests, please try again later.',
         };
 
         // Initialize Redis connection
@@ -45,7 +45,6 @@ export class EnhancedRateLimit {
             port: parseInt(env.REDIS_PORT),
             db: parseInt(env.REDIS_DB),
             ...(env.REDIS_PASSWORD && { password: env.REDIS_PASSWORD }),
-            retryDelayOnFailover: 100,
             maxRetriesPerRequest: 3,
         });
 
@@ -84,7 +83,7 @@ export class EnhancedRateLimit {
             } catch (error) {
                 console.error('Rate limiting error:', error);
                 // On error, allow the request to proceed
-                next();
+                return next();
             }
         };
     }
@@ -120,7 +119,7 @@ export class EnhancedRateLimit {
             throw new Error('Redis pipeline execution failed');
         }
 
-        const currentCount = results[1][1] as number;
+        const currentCount = (results[1]?.[1] as number) || 0;
         const remaining = Math.max(0, this.config.maxRequests - currentCount - 1);
         const reset = now + this.config.windowMs;
 
@@ -128,7 +127,7 @@ export class EnhancedRateLimit {
             limit: this.config.maxRequests,
             remaining,
             reset,
-            retryAfter: remaining < 0 ? Math.ceil(this.config.windowMs / 1000) : undefined,
+            retryAfter: remaining < 0 ? Math.ceil(this.config.windowMs / 1000) : 0,
         };
     }
 

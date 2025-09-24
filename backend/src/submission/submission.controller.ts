@@ -142,7 +142,6 @@ export class SubmissionController {
                     status: submission.status,
                     createdAt: submission.createdAt,
                     updatedAt: submission.updatedAt,
-                    form: submission.form,
                 },
             });
         } catch (error) {
@@ -263,7 +262,6 @@ export class SubmissionController {
                         status: submission.status,
                         createdAt: submission.createdAt,
                         updatedAt: submission.updatedAt,
-                        form: submission.form,
                     })),
                     pagination: {
                         page,

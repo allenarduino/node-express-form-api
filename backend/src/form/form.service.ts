@@ -16,7 +16,7 @@ export class FormService {
      */
     async create(data: {
         name: string;
-        description?: string;
+        description?: string | null;
         endpointSlug: string;
         settings?: any;
     }, userId: string): Promise<Form> {
@@ -29,6 +29,7 @@ export class FormService {
         try {
             return await this.formRepo.create({
                 ...data,
+                ...(data.description !== undefined && { description: data.description || null }),
                 userId,
             });
         } catch (error) {
@@ -93,7 +94,7 @@ export class FormService {
      */
     async update(id: string, data: Partial<{
         name: string;
-        description: string;
+        description: string | null;
         endpointSlug: string;
         settings: any;
         isActive: boolean;
@@ -119,7 +120,12 @@ export class FormService {
         }
 
         try {
-            return await this.formRepo.update(id, data);
+            const updateData = {
+                ...data,
+                ...(data.description !== undefined && { description: data.description || null }),
+                ...(data.name !== undefined && { name: data.name }),
+            };
+            return await this.formRepo.update(id, updateData);
         } catch (error) {
             throw new Error('Failed to update form');
         }

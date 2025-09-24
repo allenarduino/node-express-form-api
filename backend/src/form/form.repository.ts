@@ -19,7 +19,7 @@ export class FormRepository {
      */
     async create(data: {
         name: string;
-        description?: string;
+        description?: string | null;
         endpointSlug: string;
         settings?: any;
         userId: string;
@@ -147,7 +147,7 @@ export class FormRepository {
      */
     async update(id: string, data: Partial<{
         name: string;
-        description: string;
+        description: string | null;
         settings: any;
         isActive: boolean;
     }>): Promise<Form> {
