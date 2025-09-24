@@ -13,7 +13,8 @@
     "test": "jest --runInBand",
     "test:watch": "jest --runInBand --watch",
     "test:coverage": "jest --runInBand --coverage",
-    "test:email": "ts-node src/test-email.ts"
+    "test:email": "ts-node src/test-email.ts",
+    "test:spam": "ts-node src/test-spam-protection.ts"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +24,7 @@
     "@prisma/client": "^6.15.0",
     "@types/bull": "^3.15.9",
     "@types/cors": "^2.8.19",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "bull": "^4.16.5",
     "cors": "^2.8.5",

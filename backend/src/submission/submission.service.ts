@@ -3,15 +3,20 @@ import { FormRepository } from '../form/form.repository';
 import { Submission, Form } from '@prisma/client';
 import { CreateSubmissionInput, FormSettings } from './submission.validation';
 import { addEmailJob, addWebhookJob, addAutoReplyEmailJob } from '../queue/queueConfig';
+import { SpamProtectionService, SpamProtectionConfig } from '../services/spamProtectionService';
 
 /**
  * Submission service for business logic operations
  */
 export class SubmissionService {
+    private spamProtectionService: SpamProtectionService;
+
     constructor(
         private submissionRepo: SubmissionRepository,
         private formRepo: FormRepository
-    ) { }
+    ) {
+        this.spamProtectionService = new SpamProtectionService();
+    }
 
     /**
      * Create a new submission
@@ -32,8 +37,8 @@ export class SubmissionService {
         // Validate submission data against form fields
         await this.validateSubmissionData(data);
 
-        // Check for spam
-        await this.checkSpamProtection(data, ip);
+        // Check for spam (no formId available in createSubmission)
+        // await this.checkSpamProtection(data, ip, '', undefined);
 
         // Create submission
         const submission = await this.submissionRepo.create({
@@ -77,7 +82,7 @@ export class SubmissionService {
         await this.validateSubmissionData(data, form.settings as FormSettings);
 
         // Check for spam
-        await this.checkSpamProtection(data, ip, form.settings as FormSettings);
+        await this.checkSpamProtection(data, ip, form.id, form.settings as FormSettings);
 
         // Check if multiple submissions are allowed
         if (!this.allowMultipleSubmissions(form.settings as FormSettings)) {
@@ -215,29 +220,39 @@ export class SubmissionService {
     }
 
     /**
-     * Check for spam protection
+     * Check for spam protection using comprehensive spam protection service
      * @param data - Submission data
      * @param ip - Client IP address
+     * @param formId - Form ID
      * @param settings - Form settings (optional)
      */
-    private async checkSpamProtection(data: CreateSubmissionInput, ip: string, settings?: FormSettings): Promise<void> {
+    private async checkSpamProtection(data: CreateSubmissionInput, ip: string, formId: string, settings?: FormSettings): Promise<void> {
         const spamProtection = settings?.spamProtection;
 
         if (!spamProtection?.enabled) {
             return;
         }
 
-        // Check honeypot field
-        if (spamProtection.honeypot && data.honeypot) {
-            throw new Error('Spam detected');
-        }
+        // Prepare spam protection configuration
+        const spamConfig: SpamProtectionConfig = {
+            ...(spamProtection.honeypot && { honeypotField: 'honeypot' }),
+            enableRecaptcha: false, // Disable reCAPTCHA for now
+            ...(process.env.RECAPTCHA_SECRET_KEY && { recaptchaSecret: process.env.RECAPTCHA_SECRET_KEY }),
+            rateLimitPerIp: spamProtection.rateLimit || 10,
+            rateLimitPerForm: 50, // Default form limit
+            rateLimitWindow: 60, // 1 hour
+        };
 
-        // Check rate limiting
-        if (spamProtection.rateLimit) {
-            const recentSubmissions = await this.submissionRepo.getRecentSubmissionsByIp(ip, 1); // 1 minute
-            if (recentSubmissions.length >= spamProtection.rateLimit) {
-                throw new Error('Rate limit exceeded');
-            }
+        // Perform comprehensive spam check
+        const spamCheck = await this.spamProtectionService.performSpamCheck(
+            data.formData,
+            ip,
+            formId,
+            spamConfig
+        );
+
+        if (!spamCheck.isValid) {
+            throw new Error(`Spam protection: ${spamCheck.reason}`);
         }
     }
 

@@ -36,6 +36,10 @@ interface EnvConfig {
     REDIS_PORT: string;
     REDIS_DB: string;
     REDIS_PASSWORD?: string;
+
+    // reCAPTCHA
+    RECAPTCHA_SECRET_KEY?: string;
+    RECAPTCHA_SITE_KEY?: string;
 }
 
 // Validate required environment variables
@@ -88,6 +92,10 @@ export const env: EnvConfig = {
     REDIS_PORT: process.env.REDIS_PORT || '6379',
     REDIS_DB: process.env.REDIS_DB || '0',
     REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+
+    // reCAPTCHA
+    RECAPTCHA_SECRET_KEY: process.env.RECAPTCHA_SECRET_KEY,
+    RECAPTCHA_SITE_KEY: process.env.RECAPTCHA_SITE_KEY,
 };
 
 // Export individual constants for convenience
@@ -108,6 +116,8 @@ export const {
     SMTP_FROM,
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
+    RECAPTCHA_SECRET_KEY,
+    RECAPTCHA_SITE_KEY,
 } = env;
 
 // Export default

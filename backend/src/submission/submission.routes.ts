@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { SubmissionController } from './submission.controller';
 import { authMiddleware } from '../presentation/middleware/auth';
 import { formSubmissionRateLimit, apiRateLimit } from '../middleware/rateLimit';
+import { rateLimiters } from '../middleware/enhancedRateLimit';
 
 /**
  * Submission routes
@@ -18,7 +19,12 @@ export function createSubmissionRoutes(submissionController?: SubmissionControll
     const updateSubmission = controller.updateSubmission.bind(controller);
 
     // Public routes (no authentication required)
-    router.post('/forms/:endpointSlug/submit', formSubmissionRateLimit, submitToForm);
+    // Apply both basic and enhanced rate limiting
+    router.post('/forms/:endpointSlug/submit',
+        formSubmissionRateLimit,
+        rateLimiters.formSpecific.middleware(),
+        submitToForm
+    );
 
     // Protected routes (authentication required)
     router.get('/submissions/:id', authMiddleware, apiRateLimit, getSubmissionById);

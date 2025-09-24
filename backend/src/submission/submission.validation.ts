@@ -47,6 +47,8 @@ export const createSubmissionSchema = z.object({
     name: z.string().optional(),
     email: z.string().email().optional(),
     honeypot: z.string().optional(), // For spam protection
+    recaptcha_token: z.string().optional(), // reCAPTCHA token
+    'g-recaptcha-response': z.string().optional(), // Alternative reCAPTCHA field name
 });
 
 // Update submission validation
