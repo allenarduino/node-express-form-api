@@ -66,6 +66,22 @@ export function FormDetailsPage() {
         isActive: true,
     });
     const [statisticsLoading, setStatisticsLoading] = useState(false);
+    const [hasChanges, setHasChanges] = useState(false);
+
+    // Function to check if form data has changed
+    const checkForChanges = () => {
+        if (!form) return false;
+        return (
+            editData.name !== form.name ||
+            editData.description !== (form.description || '') ||
+            editData.isActive !== form.isActive
+        );
+    };
+
+    // Update hasChanges when editData changes
+    React.useEffect(() => {
+        setHasChanges(checkForChanges());
+    }, [editData, form]);
 
     // Function to fetch real form statistics
     const fetchFormStatistics = async (formId: string) => {
@@ -134,6 +150,7 @@ export function FormDetailsPage() {
             const updatedForm = await updateForm(form.id, updateData);
             if (updatedForm) {
                 setForm({ ...form, ...editData });
+                setHasChanges(false);
             }
         }
     };
@@ -144,6 +161,7 @@ export function FormDetailsPage() {
             description: form?.description || '',
             isActive: form?.isActive || true,
         });
+        setHasChanges(false);
     };
 
     const handleDelete = async () => {
@@ -443,6 +461,29 @@ form.addEventListener('submit', async (e) => {
                             Form is active
                         </label>
                     </div>
+
+                    <div className="flex space-x-3 pt-4 border-t border-gray-200">
+                        <button
+                            onClick={handleSave}
+                            disabled={!hasChanges}
+                            className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 ${hasChanges
+                                ? 'bg-gray-900 text-white hover:bg-gray-800'
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                        >
+                            Save Changes
+                        </button>
+                        <button
+                            onClick={handleCancel}
+                            disabled={!hasChanges}
+                            className={`px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 ${hasChanges
+                                ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                }`}
+                        >
+                            Cancel
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -597,21 +638,6 @@ form.addEventListener('submit', async (e) => {
                 </div>
             </div>
 
-            {/* Save Changes */}
-            <div className="flex space-x-3">
-                <button
-                    onClick={handleSave}
-                    className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
-                >
-                    Save Changes
-                </button>
-                <button
-                    onClick={handleCancel}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                >
-                    Cancel
-                </button>
-            </div>
         </div>
     );
 
