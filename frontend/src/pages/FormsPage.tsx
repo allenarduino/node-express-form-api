@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { CreateFormModal } from '../components/dashboard/CreateFormModal';
 import { useForms } from '../hooks/useForms';
 import { useDashboard } from '../hooks/useDashboard';
 
 export function FormsPage() {
+    const navigate = useNavigate();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -157,7 +159,11 @@ export function FormsPage() {
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {filteredForms.map((form) => (
-                                        <tr key={form.id} className="hover:bg-gray-50 transition-colors duration-150">
+                                        <tr
+                                            key={form.id}
+                                            className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                                            onClick={() => navigate(`/dashboard/forms/${form.id}`)}
+                                        >
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center mr-4">
@@ -176,7 +182,10 @@ export function FormsPage() {
                                                         {generateEndpointUrl(form.id)}
                                                     </span>
                                                     <button
-                                                        onClick={() => handleCopyUrl(generateEndpointUrl(form.id))}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleCopyUrl(generateEndpointUrl(form.id));
+                                                        }}
                                                         className="ml-2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
                                                         title="Copy URL"
                                                     >
@@ -203,6 +212,10 @@ export function FormsPage() {
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <div className="flex items-center justify-end space-x-2">
                                                     <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate(`/dashboard/forms/${form.id}`);
+                                                        }}
                                                         className="text-gray-400 hover:text-gray-600 transition-colors"
                                                         title="View Form"
                                                     >
@@ -212,6 +225,10 @@ export function FormsPage() {
                                                         </svg>
                                                     </button>
                                                     <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate(`/dashboard/forms/${form.id}/edit`);
+                                                        }}
                                                         className="text-gray-400 hover:text-gray-600 transition-colors"
                                                         title="Edit Form"
                                                     >
@@ -220,7 +237,10 @@ export function FormsPage() {
                                                         </svg>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleCopyUrl(generateEndpointUrl(form.id))}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleCopyUrl(generateEndpointUrl(form.id));
+                                                        }}
                                                         className="text-gray-400 hover:text-gray-600 transition-colors"
                                                         title="Copy Endpoint URL"
                                                     >
@@ -229,7 +249,10 @@ export function FormsPage() {
                                                         </svg>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDeleteForm(form.id, form.name)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteForm(form.id, form.name);
+                                                        }}
                                                         className="text-gray-400 hover:text-red-600 transition-colors"
                                                         title="Delete Form"
                                                         disabled={loading}

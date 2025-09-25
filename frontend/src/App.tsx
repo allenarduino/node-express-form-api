@@ -11,6 +11,7 @@ import { AuthCallbackPage } from './pages/AuthCallbackPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { FormsPage } from './pages/FormsPage'
 import { FormBuilderPage } from './pages/FormBuilderPage'
+import { FormDetailsPage } from './pages/FormDetailsPage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
 
@@ -57,6 +58,14 @@ function AppContent() {
                     element={
                         <RequireAuth>
                             <FormBuilderPage />
+                        </RequireAuth>
+                    }
+                />
+                <Route
+                    path="/dashboard/forms/:id"
+                    element={
+                        <RequireAuth>
+                            <FormDetailsPage />
                         </RequireAuth>
                     }
                 />
