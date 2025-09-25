@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { useForms } from '../hooks/useForms';
+import { useAuth } from '../context/AuthContext';
 import api from '../lib/api';
 
 interface Form {
@@ -41,11 +42,8 @@ interface FormStatistics {
 const tabs = [
     { id: 'overview', name: 'Overview', icon: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z' },
     { id: 'embed', name: 'Embed', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
-    { id: 'notifications', name: 'Notifications', icon: 'M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
     { id: 'submissions', name: 'Submissions', icon: 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
     { id: 'settings', name: 'Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
-    { id: 'security', name: 'Security', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-    { id: 'api', name: 'API Info', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' },
 ];
 
 // Helper function for formatting dates
@@ -58,10 +56,10 @@ export function FormDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { getFormById, updateForm, deleteForm } = useForms();
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('overview');
     const [form, setForm] = useState<Form | null>(null);
     const [statistics, setStatistics] = useState<FormStatistics | null>(null);
-    const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({
         name: '',
         description: '',
@@ -124,7 +122,7 @@ export function FormDetailsPage() {
     };
 
     const handleEdit = () => {
-        setIsEditing(true);
+        // Edit functionality moved to Settings tab
     };
 
     const handleSave = async () => {
@@ -136,7 +134,6 @@ export function FormDetailsPage() {
             const updatedForm = await updateForm(form.id, updateData);
             if (updatedForm) {
                 setForm({ ...form, ...editData });
-                setIsEditing(false);
             }
         }
     };
@@ -147,7 +144,6 @@ export function FormDetailsPage() {
             description: form?.description || '',
             isActive: form?.isActive || true,
         });
-        setIsEditing(false);
     };
 
     const handleDelete = async () => {
@@ -159,13 +155,6 @@ export function FormDetailsPage() {
         }
     };
 
-    const handleToggleStatus = async () => {
-        if (form) {
-            // For now, just update the local state
-            // TODO: Add API call to update form status
-            setForm({ ...form, isActive: !form.isActive });
-        }
-    };
 
     if (!form) {
         return (
@@ -182,63 +171,6 @@ export function FormDetailsPage() {
 
     const renderOverviewTab = () => (
         <div className="space-y-6">
-            {/* Form Details Card */}
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Form Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Form Name</label>
-                        <input
-                            type="text"
-                            value={editData.name}
-                            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                            disabled={!isEditing}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 disabled:bg-gray-50"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                        <div className="flex items-center space-x-3">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${form.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                {form.isActive ? 'Active' : 'Disabled'}
-                            </span>
-                            <button
-                                onClick={handleToggleStatus}
-                                className="text-sm text-gray-600 hover:text-gray-900"
-                            >
-                                {form.isActive ? 'Disable' : 'Enable'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                    <textarea
-                        value={editData.description}
-                        onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                        disabled={!isEditing}
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 disabled:bg-gray-50"
-                    />
-                </div>
-                {isEditing && (
-                    <div className="mt-4 flex space-x-3">
-                        <button
-                            onClick={handleSave}
-                            className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
-                        >
-                            Save Changes
-                        </button>
-                        <button
-                            onClick={handleCancel}
-                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                )}
-            </div>
 
             {/* Endpoint Information Card */}
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
@@ -431,53 +363,6 @@ form.addEventListener('submit', async (e) => {
         </div>
     );
 
-    const renderNotificationsTab = () => (
-        <div className="space-y-6">
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Email Notifications</h3>
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="text-sm font-medium text-gray-900">Enable Notifications</div>
-                            <div className="text-sm text-gray-500">Send email alerts when forms are submitted</div>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={form.settings?.requireEmailNotification || false}
-                                className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
-                        </label>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Notification Recipients</label>
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                                <span className="text-sm text-gray-900">{form.settings?.notificationEmail}</span>
-                                <button className="text-red-600 hover:text-red-800">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <div className="flex space-x-2">
-                                <input
-                                    type="email"
-                                    placeholder="Add email address"
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
-                                />
-                                <button className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800">
-                                    Add
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
 
     const renderSubmissionsTab = () => (
         <div className="space-y-6">
@@ -565,8 +450,9 @@ form.addEventListener('submit', async (e) => {
 
     const renderSettingsTab = () => (
         <div className="space-y-6">
+            {/* Form Configuration */}
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Form Settings</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Form Configuration</h3>
                 <div className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Form Name</label>
@@ -598,27 +484,101 @@ form.addEventListener('submit', async (e) => {
                             Form is active
                         </label>
                     </div>
-                    <div className="flex space-x-3">
-                        <button
-                            onClick={handleSave}
-                            className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
-                        >
-                            Save Changes
-                        </button>
-                        <button
-                            onClick={handleCancel}
-                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                        >
-                            Cancel
-                        </button>
+                </div>
+            </div>
+
+            {/* Endpoint Information */}
+            <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Endpoint Information</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Endpoint URL</label>
+                        <div className="flex">
+                            <input
+                                type="text"
+                                value={form.endpointUrl}
+                                readOnly
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50 text-gray-900"
+                            />
+                            <button
+                                onClick={() => navigator.clipboard.writeText(form.endpointUrl)}
+                                className="px-4 py-2 bg-gray-900 text-white rounded-r-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Form ID</label>
+                        <div className="flex">
+                            <input
+                                type="text"
+                                value={form.id}
+                                readOnly
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50 text-gray-900"
+                            />
+                            <button
+                                onClick={() => navigator.clipboard.writeText(form.id)}
+                                className="px-4 py-2 bg-gray-900 text-white rounded-r-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            >
+                                Copy
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    );
 
-    const renderSecurityTab = () => (
-        <div className="space-y-6">
+            {/* Email Notifications */}
+            <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Email Notifications</h3>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <div className="text-sm font-medium text-gray-900">Enable Notifications</div>
+                            <div className="text-sm text-gray-500">Send email alerts when forms are submitted</div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={form.settings?.requireEmailNotification || false}
+                                className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Notification Recipients</label>
+                        <div className="space-y-2">
+                            {form.settings?.notificationEmail ? (
+                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                                    <span className="text-sm text-gray-900">{form.settings.notificationEmail}</span>
+                                    <button className="text-red-600 hover:text-red-800">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="text-sm text-gray-500">No recipients configured</div>
+                            )}
+                            <div className="flex space-x-2">
+                                <input
+                                    type="email"
+                                    placeholder="Add email address"
+                                    defaultValue={user?.email || ''}
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
+                                />
+                                <button className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800">
+                                    Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Security Settings */}
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Security Settings</h3>
                 <div className="space-y-6">
@@ -677,106 +637,26 @@ form.addEventListener('submit', async (e) => {
                     </div>
                 </div>
             </div>
+
+            {/* Save Changes */}
+            <div className="flex space-x-3">
+                <button
+                    onClick={handleSave}
+                    className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
+                >
+                    Save Changes
+                </button>
+                <button
+                    onClick={handleCancel}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                >
+                    Cancel
+                </button>
+            </div>
         </div>
     );
 
-    const renderApiTab = () => (
-        <div className="space-y-6">
-            {/* cURL Example */}
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">cURL Example</h3>
-                <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                    <pre className="text-green-400 text-sm">
-                        {`curl -X POST ${generateEndpointUrl(form.id)} \\
-  -H "Content-Type: application/x-www-form-urlencoded" \\
-  -d "name=John Doe" \\
-  -d "email=john@example.com" \\
-  -d "message=Hello World"`}
-                    </pre>
-                </div>
-                <button
-                    onClick={() => handleCopy(`curl -X POST ${generateEndpointUrl(form.id)} \\
-  -H "Content-Type: application/x-www-form-urlencoded" \\
-  -d "name=John Doe" \\
-  -d "email=john@example.com" \\
-  -d "message=Hello World"`)}
-                    className="mt-4 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
-                >
-                    Copy cURL Command
-                </button>
-            </div>
 
-            {/* REST API Example */}
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">REST API Example</h3>
-                <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                    <pre className="text-blue-400 text-sm">
-                        {`fetch('${generateEndpointUrl(form.id)}', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    name: 'John Doe',
-    email: 'john@example.com',
-    message: 'Hello World'
-  })
-})
-.then(response => response.json())
-.then(data => console.log(data));`}
-                    </pre>
-                </div>
-                <button
-                    onClick={() => handleCopy(`fetch('${generateEndpointUrl(form.id)}', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    name: 'John Doe',
-    email: 'john@example.com',
-    message: 'Hello World'
-  })
-})
-.then(response => response.json())
-.then(data => console.log(data));`)}
-                    className="mt-4 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
-                >
-                    Copy JavaScript Code
-                </button>
-            </div>
-
-            {/* Webhook Integration */}
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Webhook Integration</h3>
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Webhook URL</label>
-                        <div className="flex items-center">
-                            <input
-                                type="url"
-                                value={form.settings?.webhookUrl || ''}
-                                placeholder="https://your-domain.com/webhook"
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
-                            />
-                            <button className="ml-2 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800">
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Webhook Secret</label>
-                        <input
-                            type="text"
-                            value={form.settings?.webhookSecret || ''}
-                            placeholder="Your webhook secret for verification"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -784,16 +664,10 @@ form.addEventListener('submit', async (e) => {
                 return renderOverviewTab();
             case 'embed':
                 return renderEmbedTab();
-            case 'notifications':
-                return renderNotificationsTab();
             case 'submissions':
                 return renderSubmissionsTab();
             case 'settings':
                 return renderSettingsTab();
-            case 'security':
-                return renderSecurityTab();
-            case 'api':
-                return renderApiTab();
             default:
                 return renderOverviewTab();
         }
