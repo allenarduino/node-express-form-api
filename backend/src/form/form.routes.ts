@@ -18,6 +18,7 @@ export function createFormRoutes(formController?: FormController): Router {
     const deleteForm = controller.deleteForm.bind(controller);
     const getUserForms = controller.getUserForms.bind(controller);
     const generateEndpointSlug = controller.generateEndpointSlug.bind(controller);
+    const getFormStatistics = controller.getFormStatistics.bind(controller);
 
     // Public routes (no authentication required)
     router.get('/slug/:endpointSlug', getFormByEndpointSlug); // Public access to form by endpoint slug
@@ -27,6 +28,7 @@ export function createFormRoutes(formController?: FormController): Router {
     router.post('/', authMiddleware, createForm);
     router.post('/generate-slug', authMiddleware, generateEndpointSlug);
     router.get('/user/:userId', authMiddleware, getUserForms);
+    router.get('/:id/statistics', authMiddleware, getFormStatistics); // Must come before /:id
     router.get('/:id', authMiddleware, getFormById);
     router.put('/:id', authMiddleware, updateForm);
     router.delete('/:id', authMiddleware, deleteForm);

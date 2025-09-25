@@ -474,5 +474,61 @@ export class FormController {
             });
         }
     }
+
+    async getFormStatistics(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const userId = (req as any).user?.id;
+
+            if (!userId || !id) {
+                res.status(401).json({
+                    success: false,
+                    message: 'Unauthorized or invalid request',
+                });
+                return;
+            }
+
+            // Get form to verify ownership
+            const form = await this.formService.getByIdWithUser(id, userId);
+            if (!form) {
+                res.status(404).json({
+                    success: false,
+                    message: 'Form not found',
+                });
+                return;
+            }
+
+            // Get real statistics from database
+            const totalSubmissions = await this.formService.getSubmissionCount(id);
+
+            // Calculate this week's submissions from database
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            const thisWeekSubmissions = await this.formService.getSubmissionsCountSince(id, oneWeekAgo);
+
+            // Calculate spam rate from actual spam submissions
+            const spamSubmissions = await this.formService.getSpamSubmissionsCount(id);
+            const spamRate = totalSubmissions > 0 ? (spamSubmissions / totalSubmissions) * 100 : 0;
+
+            const statistics = {
+                totalSubmissions,
+                thisWeekSubmissions,
+                spamRate,
+                createdDate: form.createdAt,
+            };
+
+            res.json({
+                success: true,
+                data: statistics,
+            });
+        } catch (error) {
+            console.error('Error fetching form statistics:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to fetch form statistics',
+                error: (error as Error).message,
+            });
+        }
+    }
 }
 

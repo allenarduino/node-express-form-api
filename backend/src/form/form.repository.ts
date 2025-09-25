@@ -214,5 +214,47 @@ export class FormRepository {
         });
         return form === null;
     }
+
+    /**
+     * Get submission count for a form
+     * @param formId - The form ID
+     * @returns Promise<number> - The number of submissions
+     */
+    async getSubmissionCount(formId: string): Promise<number> {
+        return this.prisma.submission.count({
+            where: { formId },
+        });
+    }
+
+    /**
+     * Get submissions count since a specific date
+     * @param formId - The form ID
+     * @param since - The date to count from
+     * @returns Promise<number> - The number of submissions since the date
+     */
+    async getSubmissionsCountSince(formId: string, since: Date): Promise<number> {
+        return this.prisma.submission.count({
+            where: {
+                formId,
+                createdAt: {
+                    gte: since,
+                },
+            },
+        });
+    }
+
+    /**
+     * Get spam submissions count for a form
+     * @param formId - The form ID
+     * @returns Promise<number> - The number of spam submissions
+     */
+    async getSpamSubmissionsCount(formId: string): Promise<number> {
+        return this.prisma.submission.count({
+            where: {
+                formId,
+                status: 'spam',
+            },
+        });
+    }
 }
 

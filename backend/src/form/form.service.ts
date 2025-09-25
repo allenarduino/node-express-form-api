@@ -51,6 +51,20 @@ export class FormService {
     }
 
     /**
+     * Get a form by ID with user verification
+     * @param id - The form ID
+     * @param userId - The user ID to verify ownership
+     * @returns Promise<Form | null> - The form if found and owned by user, null otherwise
+     */
+    async getByIdWithUser(id: string, userId: string): Promise<Form | null> {
+        const form = await this.formRepo.findById(id);
+        if (!form || form.userId !== userId) {
+            return null;
+        }
+        return form;
+    }
+
+    /**
      * Get a form by its endpoint slug (public access)
      * @param endpointSlug - The endpoint slug
      * @returns Promise<Form | null> - The form if found and active, null otherwise
@@ -208,6 +222,34 @@ export class FormService {
         }
 
         return slug;
+    }
+
+    /**
+     * Get submission count for a form
+     * @param formId - The form ID
+     * @returns Promise<number> - The number of submissions
+     */
+    async getSubmissionCount(formId: string): Promise<number> {
+        return this.formRepo.getSubmissionCount(formId);
+    }
+
+    /**
+     * Get submissions count since a specific date
+     * @param formId - The form ID
+     * @param since - The date to count from
+     * @returns Promise<number> - The number of submissions since the date
+     */
+    async getSubmissionsCountSince(formId: string, since: Date): Promise<number> {
+        return this.formRepo.getSubmissionsCountSince(formId, since);
+    }
+
+    /**
+     * Get spam submissions count for a form
+     * @param formId - The form ID
+     * @returns Promise<number> - The number of spam submissions
+     */
+    async getSpamSubmissionsCount(formId: string): Promise<number> {
+        return this.formRepo.getSpamSubmissionsCount(formId);
     }
 }
 

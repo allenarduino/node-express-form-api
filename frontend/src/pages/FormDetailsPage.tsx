@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { useForms } from '../hooks/useForms';
+import api from '../lib/api';
 
 interface Form {
     id: string;
     name: string;
     description: string | null;
     endpointSlug: string;
+    endpointUrl: string;
     isActive: boolean;
     createdAt: string;
+    updatedAt: string;
     submissionCount: number;
     settings?: {
         allowMultipleSubmissions: boolean;
@@ -28,6 +31,13 @@ interface Form {
     };
 }
 
+interface FormStatistics {
+    totalSubmissions: number;
+    thisWeekSubmissions: number;
+    spamRate: number;
+    createdDate: string;
+}
+
 const tabs = [
     { id: 'overview', name: 'Overview', icon: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z' },
     { id: 'embed', name: 'Embed', icon: 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4' },
@@ -38,51 +48,70 @@ const tabs = [
     { id: 'api', name: 'API Info', icon: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' },
 ];
 
+// Helper function for formatting dates
+const formatCreatedDate = (createdAt: string) => {
+    const date = new Date(createdAt);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 export function FormDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { getFormById, updateForm, deleteForm, loading } = useForms();
+    const { getFormById, updateForm, deleteForm } = useForms();
     const [activeTab, setActiveTab] = useState('overview');
     const [form, setForm] = useState<Form | null>(null);
+    const [statistics, setStatistics] = useState<FormStatistics | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({
         name: '',
         description: '',
         isActive: true,
     });
+    const [statisticsLoading, setStatisticsLoading] = useState(false);
 
-    // Mock data for demonstration
-    const mockForm: Form = {
-        id: id || 'abc123',
-        name: 'Contact Form',
-        description: 'Main contact page form for customer inquiries',
-        endpointSlug: 'contact-form',
-        isActive: true,
-        createdAt: '2024-01-15T10:30:00Z',
-        submissionCount: 127,
-        settings: {
-            allowMultipleSubmissions: true,
-            requireEmailNotification: true,
-            notificationEmail: 'admin@company.com',
-            redirectUrl: 'https://company.com/thank-you',
-            spamProtection: {
-                enabled: true,
-                honeypot: true,
-                rateLimit: 10,
-            },
-            webhookUrl: 'https://company.com/webhook',
-            webhookSecret: 'secret123',
-        },
+    // Function to fetch real form statistics
+    const fetchFormStatistics = async (formId: string) => {
+        try {
+            setStatisticsLoading(true);
+            const response = await api.get(`/api/forms/${formId}/statistics`);
+            setStatistics(response.data);
+        } catch (error) {
+            console.error('Failed to fetch form statistics:', error);
+            // Don't set any statistics if API fails
+            setStatistics(null);
+        } finally {
+            setStatisticsLoading(false);
+        }
     };
 
+
     React.useEffect(() => {
-        // In a real app, you'd fetch the form data here
-        setForm(mockForm);
-        setEditData({
-            name: mockForm.name,
-            description: mockForm.description || '',
-            isActive: mockForm.isActive,
-        });
+        if (id) {
+            const fetchFormData = async () => {
+                try {
+                    // Fetch real form data
+                    const formData = await getFormById(id);
+                    if (formData) {
+                        setForm(formData);
+                        setEditData({
+                            name: formData.name,
+                            description: formData.description || '',
+                            isActive: formData.isActive,
+                        });
+                        // Fetch real statistics
+                        await fetchFormStatistics(id);
+                    } else {
+                        console.error('Form not found');
+                        // Don't set any form data if not found
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch form data:', error);
+                    // Don't set any form data if error occurs
+                }
+            };
+
+            fetchFormData();
+        }
     }, [id]);
 
     const generateEndpointUrl = (formId: string) => {
@@ -100,7 +129,11 @@ export function FormDetailsPage() {
 
     const handleSave = async () => {
         if (form) {
-            const updatedForm = await updateForm(form.id, editData);
+            const updateData = {
+                name: editData.name,
+                description: editData.description,
+            };
+            const updatedForm = await updateForm(form.id, updateData);
             if (updatedForm) {
                 setForm({ ...form, ...editData });
                 setIsEditing(false);
@@ -128,10 +161,9 @@ export function FormDetailsPage() {
 
     const handleToggleStatus = async () => {
         if (form) {
-            const updatedForm = await updateForm(form.id, { isActive: !form.isActive });
-            if (updatedForm) {
-                setForm({ ...form, isActive: !form.isActive });
-            }
+            // For now, just update the local state
+            // TODO: Add API call to update form status
+            setForm({ ...form, isActive: !form.isActive });
         }
     };
 
@@ -139,7 +171,10 @@ export function FormDetailsPage() {
         return (
             <DashboardLayout>
                 <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading form details...</p>
+                    </div>
                 </div>
             </DashboardLayout>
         );
@@ -249,24 +284,42 @@ export function FormDetailsPage() {
             {/* Form Statistics Card */}
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Form Statistics</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">{form.submissionCount}</div>
-                        <div className="text-sm text-gray-500">Total Submissions</div>
+                {statisticsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
                     </div>
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">8</div>
-                        <div className="text-sm text-gray-500">This Week</div>
+                ) : statistics ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-gray-900">
+                                {statistics.totalSubmissions || 0}
+                            </div>
+                            <div className="text-sm text-gray-500">Total Submissions</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-gray-900">
+                                {statistics.thisWeekSubmissions || 0}
+                            </div>
+                            <div className="text-sm text-gray-500">This Week</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-gray-900">
+                                {statistics.spamRate ? statistics.spamRate.toFixed(1) : '0.0'}%
+                            </div>
+                            <div className="text-sm text-gray-500">Spam Rate</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-gray-900">
+                                {statistics.createdDate ? formatCreatedDate(statistics.createdDate) : 'N/A'}
+                            </div>
+                            <div className="text-sm text-gray-500">Created</div>
+                        </div>
                     </div>
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">2.3%</div>
-                        <div className="text-sm text-gray-500">Spam Rate</div>
+                ) : (
+                    <div className="text-center py-8">
+                        <p className="text-gray-500">Failed to load statistics</p>
                     </div>
-                    <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">Jan 15</div>
-                        <div className="text-sm text-gray-500">Created</div>
-                    </div>
-                </div>
+                )}
             </div>
 
             {/* Quick Actions Card */}
@@ -790,8 +843,8 @@ form.addEventListener('submit', async (e) => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
-                                        ? 'border-gray-900 text-gray-900'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'border-gray-900 text-gray-900'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                             >
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

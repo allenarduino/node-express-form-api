@@ -4,7 +4,7 @@ import { getToken } from './auth'
 /**
  * API client configuration
  */
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:4000'
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:4001'
 
 /**
  * Create Axios instance with base configuration
