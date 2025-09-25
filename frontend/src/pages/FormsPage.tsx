@@ -1,19 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { CreateFormModal } from '../components/dashboard/CreateFormModal';
 import { useForms } from '../hooks/useForms';
 import { useDashboard } from '../hooks/useDashboard';
-
-interface Form {
-    id: string;
-    name: string;
-    description: string | null;
-    endpointSlug: string;
-    endpointUrl: string;
-    isActive: boolean;
-    createdAt: string;
-    submissionCount: number;
-}
 
 export function FormsPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -26,8 +15,7 @@ export function FormsPage() {
 
     // Filter forms based on search and status
     const filteredForms = forms.filter(form => {
-        const matchesSearch = form.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (form.description && form.description.toLowerCase().includes(searchTerm.toLowerCase()));
+        const matchesSearch = form.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'all' ||
             (statusFilter === 'active' && form.isActive) ||
             (statusFilter === 'inactive' && !form.isActive);
@@ -54,6 +42,10 @@ export function FormsPage() {
             month: 'short',
             day: 'numeric'
         });
+    };
+
+    const generateEndpointUrl = (formId: string) => {
+        return `https://localhost:4001/api/${formId}`;
     };
 
     return (
@@ -175,19 +167,16 @@ export function FormsPage() {
                                                     </div>
                                                     <div>
                                                         <div className="text-sm font-medium text-gray-900">{form.name}</div>
-                                                        {form.description && (
-                                                            <div className="text-sm text-gray-500">{form.description}</div>
-                                                        )}
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
                                                     <span className="text-sm text-gray-900 font-mono">
-                                                        {form.endpointUrl}
+                                                        {generateEndpointUrl(form.id)}
                                                     </span>
                                                     <button
-                                                        onClick={() => handleCopyUrl(form.endpointUrl)}
+                                                        onClick={() => handleCopyUrl(generateEndpointUrl(form.id))}
                                                         className="ml-2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
                                                         title="Copy URL"
                                                     >
@@ -199,8 +188,8 @@ export function FormsPage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${form.isActive
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-gray-100 text-gray-800'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-gray-100 text-gray-800'
                                                     }`}>
                                                     {form.isActive ? 'Active' : 'Disabled'}
                                                 </span>
@@ -231,7 +220,7 @@ export function FormsPage() {
                                                         </svg>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleCopyUrl(form.endpointUrl)}
+                                                        onClick={() => handleCopyUrl(generateEndpointUrl(form.id))}
                                                         className="text-gray-400 hover:text-gray-600 transition-colors"
                                                         title="Copy Endpoint URL"
                                                     >
