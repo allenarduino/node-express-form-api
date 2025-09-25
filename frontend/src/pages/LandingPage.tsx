@@ -9,17 +9,17 @@ export function LandingPage() {
                     <div className="max-w-3xl">
                         <h1 className="heading-1 mb-6">
                             Welcome to{' '}
-                            <span className="text-blue-600">Express React Auth</span>
+                            <span className="text-gray-900">Express React Auth</span>
                         </h1>
                         <p className="text-xl text-muted mb-8 leading-relaxed">
                             A modern, secure authentication system built with Express.js, React,
                             and TypeScript. Get started with our powerful authentication features.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Link to="/signup" className="btn btn-primary btn-lg">
+                            <Link to="/signup" className="btn hover:bg-gray-700 bg-gray-900 text-white btn-lg">
                                 Get Started
                             </Link>
-                            <Link to="/login" className="btn btn-outline btn-lg">
+                            <Link to="/login" className="btn btn-outline border-2 border-gray-900 text-gray-900 btn-lg">
                                 Sign In
                             </Link>
                         </div>

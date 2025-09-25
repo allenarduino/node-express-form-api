@@ -79,7 +79,7 @@ export const ResetPasswordPage: React.FC = () => {
                             </p>
                             <Link
                                 to="/login"
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                             >
                                 Go to Login
                             </Link>
@@ -118,7 +118,7 @@ export const ResetPasswordPage: React.FC = () => {
                             </p>
                             <Link
                                 to="/forgot-password"
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                             >
                                 Request new reset link
                             </Link>
@@ -151,7 +151,7 @@ export const ResetPasswordPage: React.FC = () => {
                                         type="password"
                                         id="password"
                                         autoComplete="new-password"
-                                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
                                         placeholder="Enter your new password"
                                     />
                                 </div>
@@ -170,7 +170,7 @@ export const ResetPasswordPage: React.FC = () => {
                                         type="password"
                                         id="confirmPassword"
                                         autoComplete="new-password"
-                                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
                                         placeholder="Confirm your new password"
                                     />
                                 </div>
@@ -183,7 +183,7 @@ export const ResetPasswordPage: React.FC = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -202,7 +202,7 @@ export const ResetPasswordPage: React.FC = () => {
                             <div className="text-center">
                                 <Link
                                     to="/login"
-                                    className="font-medium text-blue-600 hover:text-blue-500"
+                                    className="font-medium text-gray-600 hover:text-gray-500"
                                 >
                                     Back to Login
                                 </Link>

@@ -102,13 +102,13 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick }) => {
                     <div className="relative" ref={dropdownRef}>
                         <button
                             type="button"
-                            className="flex items-center p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            className="flex items-center p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             aria-expanded={isDropdownOpen}
                             aria-haspopup="menu"
                             aria-label="User menu"
                         >
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-medium">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-white text-sm font-medium">
                                 {user ? getUserInitials(user.email) : 'U'}
                             </div>
                         </button>

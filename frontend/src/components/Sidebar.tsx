@@ -82,8 +82,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                                                 to={item.href}
                                                 className={({ isActive }) =>
                                                     `group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors ${isActive
-                                                        ? 'bg-blue-50 text-blue-700'
-                                                        : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
+                                                        ? 'bg-gray-50 text-gray-700'
+                                                        : 'text-gray-700 hover:text-gray-700 hover:bg-gray-50'
                                                     }`
                                                 }
                                             >
@@ -98,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             {/* User section */}
                             <li className="mt-auto">
                                 <div className="flex items-center gap-x-4 px-2 py-3 text-sm font-semibold leading-6 text-gray-900">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-medium">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-white text-sm font-medium">
                                         {user ? getUserInitials(user.email) : 'U'}
                                     </div>
                                     <span className="sr-only">Your profile</span>
@@ -128,7 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
                         <button
                             onClick={onClose}
-                            className="rounded-md p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="rounded-md p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500"
                             aria-label="Close menu"
                         >
                             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,8 +148,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                                                 onClick={onClose}
                                                 className={({ isActive }) =>
                                                     `group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold transition-colors ${isActive
-                                                        ? 'bg-blue-50 text-blue-700'
-                                                        : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
+                                                        ? 'bg-gray-50 text-gray-700'
+                                                        : 'text-gray-700 hover:text-gray-700 hover:bg-gray-50'
                                                     }`
                                                 }
                                             >
@@ -164,7 +164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             {/* User section */}
                             <li className="mt-auto">
                                 <div className="flex items-center gap-x-4 px-2 py-3 text-sm font-semibold leading-6 text-gray-900">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white text-sm font-medium">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-white text-sm font-medium">
                                         {user ? getUserInitials(user.email) : 'U'}
                                     </div>
                                     <span className="sr-only">Your profile</span>

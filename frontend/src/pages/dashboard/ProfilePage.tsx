@@ -47,7 +47,7 @@ export const ProfilePage: React.FC = () => {
             <DashboardLayout>
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center justify-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600"></div>
                     </div>
                 </div>
             </DashboardLayout>
@@ -169,7 +169,7 @@ export const ProfilePage: React.FC = () => {
                                             href={user.profile.website}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-blue-600 hover:text-blue-500"
+                                            className="text-gray-600 hover:text-gray-500"
                                         >
                                             {user.profile.website}
                                         </a>

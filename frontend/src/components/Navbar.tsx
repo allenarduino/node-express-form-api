@@ -37,7 +37,7 @@ export function Navbar() {
                     <div className="flex items-center">
                         <Link
                             to="/"
-                            className="text-xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+                            className="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
                         >
                             Express React Auth
                         </Link>
@@ -57,7 +57,7 @@ export function Navbar() {
                                 <div className="relative" ref={dropdownRef}>
                                     <button
                                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                        className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 overflow-hidden"
+                                        className="flex items-center justify-center w-8 h-8 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 overflow-hidden"
                                         aria-label="User menu"
                                     >
                                         {user?.profile?.avatarUrl ? (
@@ -106,7 +106,7 @@ export function Navbar() {
                                 </Link>
                                 <Link
                                     to="/signup"
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                                    className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                                 >
                                     Sign Up
                                 </Link>

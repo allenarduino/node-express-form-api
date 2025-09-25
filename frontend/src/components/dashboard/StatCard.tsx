@@ -25,7 +25,7 @@ export function StatCard({ title, value, icon, trend }: StatCardProps) {
                     )}
                 </div>
                 <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center">
                         {icon}
                     </div>
                 </div>
