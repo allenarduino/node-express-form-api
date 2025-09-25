@@ -366,47 +366,6 @@ form.addEventListener('submit', async (e) => {
 
     const renderSubmissionsTab = () => (
         <div className="space-y-6">
-            <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Export Submissions</h3>
-                <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button className="flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Export as CSV
-                        </button>
-                        <button className="flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Export as PDF
-                        </button>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Retention Period</label>
-                        <select className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500">
-                            <option value="30">30 days</option>
-                            <option value="60">60 days</option>
-                            <option value="90">90 days</option>
-                            <option value="custom">Custom</option>
-                        </select>
-                    </div>
-
-                    <div className="flex items-center">
-                        <input
-                            type="checkbox"
-                            id="auto-delete"
-                            className="h-4 w-4 text-gray-600 focus:ring-gray-500 border-gray-300 rounded"
-                        />
-                        <label htmlFor="auto-delete" className="ml-2 text-sm text-gray-700">
-                            Auto-delete submissions after export
-                        </label>
-                    </div>
-                </div>
-            </div>
-
             {/* Recent Submissions Preview */}
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Submissions</h3>
