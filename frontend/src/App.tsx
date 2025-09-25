@@ -37,7 +37,7 @@ function AppContent() {
                     }
                 />
                 <Route
-                    path="/forms"
+                    path="/dashboard/forms"
                     element={
                         <RequireAuth>
                             <FormsPage />
@@ -45,7 +45,7 @@ function AppContent() {
                     }
                 />
                 <Route
-                    path="/forms/new"
+                    path="/dashboard/forms/new"
                     element={
                         <RequireAuth>
                             <FormBuilderPage />
@@ -53,7 +53,7 @@ function AppContent() {
                     }
                 />
                 <Route
-                    path="/forms/:id/edit"
+                    path="/dashboard/forms/:id/edit"
                     element={
                         <RequireAuth>
                             <FormBuilderPage />
