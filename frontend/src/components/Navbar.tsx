@@ -39,7 +39,7 @@ export function Navbar() {
                             to="/"
                             className="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
                         >
-                            Express React Auth
+                            FormAPI
                         </Link>
                     </div>
 
