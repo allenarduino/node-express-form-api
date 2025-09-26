@@ -28,6 +28,13 @@ export function createSubmissionRoutes(submissionController?: SubmissionControll
         submitToForm
     );
 
+    // API-prefixed Formspree-style URL: /api/f/:endpointSlug
+    router.post('/api/f/:endpointSlug',
+        formSubmissionRateLimit,
+        rateLimiters.formSpecific.middleware(),
+        submitToForm
+    );
+
     // Original API-style URL: /forms/:endpointSlug/submit
     router.post('/forms/:endpointSlug/submit',
         formSubmissionRateLimit,

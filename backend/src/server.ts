@@ -35,7 +35,9 @@ app.use(cors({
         'http://localhost:3000',
         'http://localhost:5173',
         'http://127.0.0.1:3000',
-        'http://127.0.0.1:5173'
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:5500',  // Added for HTML file testing
+        'http://localhost:5500'   // Added for HTML file testing
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

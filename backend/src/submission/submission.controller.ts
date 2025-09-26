@@ -37,25 +37,39 @@ export class SubmissionController {
                 return;
             }
 
-            // Validate input
-            const validationResult = createSubmissionSchema.safeParse(req.body);
-            if (!validationResult.success) {
-                res.status(400).json({
-                    success: false,
-                    message: 'Validation failed',
-                    errors: validationResult.error.issues.map((err: any) => ({
-                        field: err.path.join('.'),
-                        message: err.message,
-                    })),
-                });
-                return;
+            // Handle HTML form submissions (application/x-www-form-urlencoded)
+            let submissionData;
+
+            if (req.get('Content-Type')?.includes('application/x-www-form-urlencoded')) {
+                // For HTML forms, wrap the form data in a formData object
+                const { name, email, honeypot, 'g-recaptcha-response': recaptchaResponse, ...formFields } = req.body;
+                submissionData = {
+                    formData: formFields,
+                    name,
+                    email,
+                    honeypot,
+                    'g-recaptcha-response': recaptchaResponse
+                };
+            } else {
+                // For JSON submissions, validate normally
+                const validationResult = createSubmissionSchema.safeParse(req.body);
+                if (!validationResult.success) {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Validation failed',
+                        errors: validationResult.error.issues.map((err: any) => ({
+                            field: err.path.join('.'),
+                            message: err.message,
+                        })),
+                    });
+                    return;
+                }
+                submissionData = validationResult.data;
             }
 
             // Get client IP and User-Agent
             const ip = req.ip || req.connection.remoteAddress || 'unknown';
             const userAgent = req.get('User-Agent') || 'unknown';
-
-            const submissionData = validationResult.data;
             const submission = await this.submissionService.submitToForm(
                 endpointSlug,
                 submissionData,

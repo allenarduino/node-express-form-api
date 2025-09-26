@@ -47,7 +47,7 @@ export function FormsPage() {
     };
 
     const generateEndpointUrl = (endpointSlug: string) => {
-        return `https://localhost:4001/f/${endpointSlug}`;
+        return `http://localhost:4001/api/f/${endpointSlug}`;
     };
 
     return (
