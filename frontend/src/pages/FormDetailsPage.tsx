@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { useForms } from '../hooks/useForms';
 import { useAuth } from '../context/AuthContext';
+import { useSubmissions } from '../hooks/useSubmissions';
 import api from '../lib/api';
 
 interface Form {
@@ -70,6 +71,9 @@ export function FormDetailsPage() {
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
 
+    // Fetch submissions data
+    const { data: submissionsData, loading: submissionsLoading, error: submissionsError, refetch: refetchSubmissions } = useSubmissions(id || '', 1, 10);
+
     // Function to check if form data has changed
     const checkForChanges = () => {
         if (!form) return false;
@@ -132,6 +136,34 @@ export function FormDetailsPage() {
 
     const generateEndpointUrl = (formId: string) => {
         return `https://localhost:4001/api/${formId}`;
+    };
+
+    const formatSubmissionDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+
+        if (diffInHours < 1) {
+            return 'Just now';
+        } else if (diffInHours < 24) {
+            return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+        } else {
+            const diffInDays = Math.floor(diffInHours / 24);
+            return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+        }
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'new':
+                return 'bg-green-100 text-green-800';
+            case 'read':
+                return 'bg-blue-100 text-blue-800';
+            case 'responded':
+                return 'bg-gray-100 text-gray-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
     };
 
     const handleCopy = (text: string) => {
@@ -408,43 +440,81 @@ form.addEventListener('submit', async (e) => {
 
     const renderSubmissionsTab = () => (
         <div className="space-y-6">
-            {/* Recent Submissions Preview */}
+            {/* Recent Submissions */}
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Submissions</h3>
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            <tr>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">John Doe</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">john@example.com</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 hours ago</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        New
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Jane Smith</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">jane@example.com</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1 day ago</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        New
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">Recent Submissions</h3>
+                    {submissionsData && (
+                        <span className="text-sm text-gray-500">
+                            {submissionsData.pagination.total} total submissions
+                        </span>
+                    )}
                 </div>
+
+                {submissionsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600"></div>
+                    </div>
+                ) : submissionsError ? (
+                    <div className="text-center py-8">
+                        <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load submissions</h3>
+                        <p className="text-gray-500 mb-4">{submissionsError}</p>
+                        <button
+                            onClick={refetchSubmissions}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-900 hover:bg-gray-800"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                ) : !submissionsData || submissionsData.submissions.length === 0 ? (
+                    <div className="text-center py-8">
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No submissions yet</h3>
+                        <p className="text-gray-500">Submissions will appear here once users start submitting to your form.</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {submissionsData.submissions.map((submission) => (
+                                    <tr key={submission.id} className="hover:bg-gray-50 transition-colors duration-150">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {submission.name || 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            {submission.email || 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {formatSubmissionDate(submission.createdAt)}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(submission.status)}`}>
+                                                {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
     );
