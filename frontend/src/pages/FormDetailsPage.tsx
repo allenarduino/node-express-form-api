@@ -533,21 +533,22 @@ form.addEventListener('submit', async (e) => {
             </div>
 
             {/* Endpoint Information */}
+            {/* Endpoint Information Card */}
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Endpoint Information</h3>
                 <div className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Endpoint URL</label>
-                        <div className="flex">
+                        <div className="flex items-center">
                             <input
                                 type="text"
-                                value={form.endpointUrl}
+                                value={generateEndpointUrl(form.id)}
                                 readOnly
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50 text-gray-900"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500"
                             />
                             <button
-                                onClick={() => navigator.clipboard.writeText(form.endpointUrl)}
-                                className="px-4 py-2 bg-gray-900 text-white rounded-r-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                onClick={() => handleCopy(generateEndpointUrl(form.id))}
+                                className="ml-2 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
                             >
                                 Copy
                             </button>
@@ -555,16 +556,16 @@ form.addEventListener('submit', async (e) => {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Form ID</label>
-                        <div className="flex">
+                        <div className="flex items-center">
                             <input
                                 type="text"
                                 value={form.id}
                                 readOnly
-                                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50 text-gray-900"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500"
                             />
                             <button
-                                onClick={() => navigator.clipboard.writeText(form.id)}
-                                className="px-4 py-2 bg-gray-900 text-white rounded-r-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                onClick={() => handleCopy(form.id)}
+                                className="ml-2 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
                             >
                                 Copy
                             </button>
@@ -572,7 +573,6 @@ form.addEventListener('submit', async (e) => {
                     </div>
                 </div>
             </div>
-
             {/* Email Notifications */}
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Email Notifications</h3>
