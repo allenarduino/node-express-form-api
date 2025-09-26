@@ -37,9 +37,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <DashboardSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
                 {/* Main content */}
-                <div className="flex-1 flex flex-col">
+                <div className=" flex flex-1 w-[90%]">
                     {/* Page content */}
-                    <main className="flex-1 p-6 overflow-y-auto">
+                    <main className="flex-1 sm:p-6 p-2 overflow-y-auto justify-center items-center">
                         {children}
                     </main>
                 </div>

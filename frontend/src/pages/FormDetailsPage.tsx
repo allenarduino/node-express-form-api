@@ -705,10 +705,10 @@ form.addEventListener('submit', async (e) => {
 
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto">
+            <div className=" md:w-[80%] w-full">
                 {/* Header */}
                 <div className="mb-8">
-                    <div className="flex items-center justify-between">
+                    <div className="flex ">
                         <div>
                             <button
                                 onClick={() => navigate('/dashboard/forms')}
