@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormAPI Test - HTML Form & JSON API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid #bee5eb;
+        }
+        .endpoint-info {
+            background-color: #e2e3e5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>FormAPI Test Suite</h1>
+    
+    <div class="container">
+        <h2>📋 Test 1: HTML Form Submission</h2>
+        <div class="endpoint-info">
+            <strong>Endpoint:</strong> http://localhost:4001/api/f/vfedlgjw<br>
+            <strong>Method:</strong> POST<br>
+            <strong>Content-Type:</strong> application/x-www-form-urlencoded
+        </div>
+        
+        <form id="htmlForm" action="http://localhost:4001/api/f/vfedlgjw" method="POST">
+            <div class="form-group">
+                <label for="htmlName">Name:</label>
+                <input type="text" id="htmlName" name="name" placeholder="Your Name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="htmlEmail">Email:</label>
+                <input type="email" id="htmlEmail" name="email" placeholder="Your Email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="htmlMessage">Message:</label>
+                <textarea id="htmlMessage" name="message" placeholder="Your Message" rows="4" required></textarea>
+            </div>
+            
+            <button type="submit" id="htmlSubmitBtn">Submit HTML Form</button>
+        </form>
+        
+        <div id="htmlResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔧 Test 2: JSON API Submission</h2>
+        <div class="endpoint-info">
+            <strong>Endpoint:</strong> http://localhost:4001/api/f/vfedlgjw<br>
+            <strong>Method:</strong> POST<br>
+            <strong>Content-Type:</strong> application/json
+        </div>
+        
+        <div class="form-group">
+            <label for="jsonName">Name:</label>
+            <input type="text" id="jsonName" placeholder="Your Name">
+        </div>
+        
+        <div class="form-group">
+            <label for="jsonEmail">Email:</label>
+            <input type="email" id="jsonEmail" placeholder="Your Email">
+        </div>
+        
+        <div class="form-group">
+            <label for="jsonMessage">Message:</label>
+            <textarea id="jsonMessage" placeholder="Your Message" rows="4"></textarea>
+        </div>
+        
+        <button onclick="submitJsonForm()" id="jsonSubmitBtn">Submit JSON API</button>
+        <button onclick="fillSampleData()" style="background-color: #28a745;">Fill Sample Data</button>
+        
+        <div id="jsonResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Test Results Summary</h2>
+        <div id="summaryResult"></div>
+    </div>
+
+    <script>
+        let testResults = {
+            htmlForm: null,
+            jsonApi: null
+        };
+
+        // HTML Form submission handler
+        document.getElementById('htmlForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('htmlSubmitBtn');
+            const resultDiv = document.getElementById('htmlResult');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span>Submitting...';
+            
+            try {
+                // Create URLSearchParams for application/x-www-form-urlencoded
+                const formData = new URLSearchParams();
+                formData.append('name', document.getElementById('htmlName').value);
+                formData.append('email', document.getElementById('htmlEmail').value);
+                formData.append('message', document.getElementById('htmlMessage').value);
+                
+                const response = await fetch('http://localhost:4001/api/f/vfedlgjw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ HTML Form submitted successfully!<br><strong>Response:</strong><br><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+                    testResults.htmlForm = { success: true, data: data };
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ HTML Form Error:<br><strong>Response:</strong><br><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+                    testResults.htmlForm = { success: false, data: data };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ HTML Form Network Error: ' + error.message + '</div>';
+                testResults.htmlForm = { success: false, error: error.message };
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit HTML Form';
+                updateSummary();
+            }
+        });
+
+        // JSON API submission function
+        async function submitJsonForm() {
+            const submitBtn = document.getElementById('jsonSubmitBtn');
+            const resultDiv = document.getElementById('jsonResult');
+            
+            const name = document.getElementById('jsonName').value;
+            const email = document.getElementById('jsonEmail').value;
+            const message = document.getElementById('jsonMessage').value;
+            
+            if (!name || !email || !message) {
+                resultDiv.innerHTML = '<div class="error">❌ Please fill in all fields before submitting</div>';
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span>Submitting...';
+            
+            try {
+                const response = await fetch('http://localhost:4001/api/f/vfedlgjw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        formData: {
+                            message: message
+                        },
+                        name: name,
+                        email: email
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ JSON API submitted successfully!<br><strong>Response:</strong><br><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+                    testResults.jsonApi = { success: true, data: data };
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ JSON API Error:<br><strong>Response:</strong><br><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+                    testResults.jsonApi = { success: false, data: data };
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ JSON API Network Error: ' + error.message + '</div>';
+                testResults.jsonApi = { success: false, error: error.message };
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit JSON API';
+                updateSummary();
+            }
+        }
+
+        // Fill sample data function
+        function fillSampleData() {
+            document.getElementById('jsonName').value = 'John Doe';
+            document.getElementById('jsonEmail').value = 'john.doe@example.com';
+            document.getElementById('jsonMessage').value = 'This is a test message sent via JSON API to verify the dual content type support!';
+        }
+
+        // Update summary function
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summaryResult');
+            let summary = '<div class="info"><h3>Test Status:</h3><ul>';
+            
+            if (testResults.htmlForm !== null) {
+                summary += '<li><strong>HTML Form:</strong> ' + (testResults.htmlForm.success ? '✅ Success' : '❌ Failed') + '</li>';
+            } else {
+                summary += '<li><strong>HTML Form:</strong> ⏳ Not tested yet</li>';
+            }
+            
+            if (testResults.jsonApi !== null) {
+                summary += '<li><strong>JSON API:</strong> ' + (testResults.jsonApi.success ? '✅ Success' : '❌ Failed') + '</li>';
+            } else {
+                summary += '<li><strong>JSON API:</strong> ⏳ Not tested yet</li>';
+            }
+            
+            summary += '</ul></div>';
+            
+            if (testResults.htmlForm && testResults.jsonApi) {
+                if (testResults.htmlForm.success && testResults.jsonApi.success) {
+                    summary += '<div class="success"><strong>🎉 All tests passed! Both HTML form and JSON API submissions are working correctly.</strong></div>';
+                } else {
+                    summary += '<div class="error"><strong>⚠️ Some tests failed. Check the individual results above.</strong></div>';
+                }
+            }
+            
+            summaryDiv.innerHTML = summary;
+        }
+
+        // Initialize summary
+        updateSummary();
+    </script>
+</body>
+</html>

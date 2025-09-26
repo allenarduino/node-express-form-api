@@ -40,7 +40,13 @@ export class SubmissionController {
             // Handle HTML form submissions (application/x-www-form-urlencoded)
             let submissionData;
 
-            if (req.get('Content-Type')?.includes('application/x-www-form-urlencoded')) {
+            // Check if this is an HTML form submission
+            const contentType = req.get('Content-Type') || '';
+            const isHtmlForm = contentType.includes('application/x-www-form-urlencoded') ||
+                contentType.includes('multipart/form-data') ||
+                (!contentType.includes('application/json') && Object.keys(req.body).length > 0);
+
+            if (isHtmlForm) {
                 // For HTML forms, wrap the form data in a formData object
                 const { name, email, honeypot, 'g-recaptcha-response': recaptchaResponse, ...formFields } = req.body;
                 submissionData = {
@@ -50,6 +56,21 @@ export class SubmissionController {
                     honeypot,
                     'g-recaptcha-response': recaptchaResponse
                 };
+
+                // Validate the processed data
+                const validationResult = createSubmissionSchema.safeParse(submissionData);
+                if (!validationResult.success) {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Validation failed',
+                        errors: validationResult.error.issues.map((err: any) => ({
+                            field: err.path.join('.'),
+                            message: err.message,
+                        })),
+                    });
+                    return;
+                }
+                submissionData = validationResult.data;
             } else {
                 // For JSON submissions, validate normally
                 const validationResult = createSubmissionSchema.safeParse(req.body);
