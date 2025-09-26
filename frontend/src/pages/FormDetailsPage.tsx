@@ -720,7 +720,6 @@ form.addEventListener('submit', async (e) => {
                                 Back to Forms
                             </button>
                             <h1 className="text-3xl font-bold text-gray-900">{form.name}</h1>
-                            <p className="text-gray-600">{form.description || 'No description provided'}</p>
                         </div>
 
                     </div>
