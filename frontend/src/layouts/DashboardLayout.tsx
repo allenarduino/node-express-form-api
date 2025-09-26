@@ -12,7 +12,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return (
         <div className="h-screen bg-gray-50 flex flex-col">
             {/* Header */}
-            <div className="bg-white shadow-sm border-b border-gray-200 w-full z-[60]">
+            <div className="fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-gray-200 w-full z-[60]">
                 <div className="flex items-center justify-between h-16 px-4 lg:px-6">
                     <div className="flex items-center">
                         <button
@@ -32,7 +32,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
 
             {/* Content Area with Sidebar */}
-            <div className="flex-1 flex">
+            <div className="flex-1 flex pt-16 lg:pl-64">
                 {/* Sidebar */}
                 <DashboardSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
