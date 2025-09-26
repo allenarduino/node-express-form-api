@@ -46,8 +46,8 @@ export function FormsPage() {
         });
     };
 
-    const generateEndpointUrl = (formId: string) => {
-        return `https://localhost:4001/api/${formId}`;
+    const generateEndpointUrl = (endpointSlug: string) => {
+        return `https://localhost:4001/f/${endpointSlug}`;
     };
 
     return (
@@ -176,12 +176,12 @@ export function FormsPage() {
                                             </label>
                                             <div className="flex items-center">
                                                 <span className="text-sm text-gray-900 font-mono truncate flex-1">
-                                                    {generateEndpointUrl(form.id)}
+                                                    {generateEndpointUrl(form.endpointSlug)}
                                                 </span>
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleCopyUrl(generateEndpointUrl(form.id));
+                                                        handleCopyUrl(generateEndpointUrl(form.endpointSlug));
                                                     }}
                                                     className="ml-2 p-1 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
                                                     title="Copy URL"

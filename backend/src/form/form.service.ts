@@ -196,32 +196,41 @@ export class FormService {
     }
 
     /**
-     * Generate a unique endpoint slug from a name
-     * @param name - The form name
-     * @param userId - The user ID for uniqueness
-     * @returns Promise<string> - A unique endpoint slug
+     * Generate a unique endpoint slug with random characters
+     * @param name - The form name (ignored, kept for backward compatibility)
+     * @param userId - The user ID (ignored, kept for backward compatibility)
+     * @returns Promise<string> - A unique random endpoint slug
      */
     async generateUniqueEndpointSlug(name: string, userId: string): Promise<string> {
-        // Convert name to slug format
-        let baseSlug = name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
+        // Generate a completely random string like Formspree (e.g., "mnqyprvo")
+        // Ignore the form name completely and just generate unique random characters
+        const generateRandomSlug = (length: number = 8): string => {
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        };
 
-        if (!baseSlug) {
-            baseSlug = 'form';
+        // Try to generate a unique slug
+        let attempts = 0;
+        const maxAttempts = 20; // Increased attempts for better uniqueness
+
+        while (attempts < maxAttempts) {
+            const slug = generateRandomSlug();
+
+            if (await this.formRepo.isEndpointSlugAvailable(slug)) {
+                return slug;
+            }
+
+            attempts++;
         }
 
-        // Check if base slug is available
-        let slug = baseSlug;
-        let counter = 1;
-
-        while (!(await this.formRepo.isEndpointSlugAvailable(slug))) {
-            slug = `${baseSlug}-${counter}`;
-            counter++;
-        }
-
-        return slug;
+        // Fallback: if we can't generate a unique random slug, use crypto-based approach
+        const crypto = require('crypto');
+        const randomBytes = crypto.randomBytes(4);
+        return randomBytes.toString('hex').substring(0, 8);
     }
 
     /**

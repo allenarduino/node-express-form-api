@@ -20,6 +20,15 @@ export function createSubmissionRoutes(submissionController?: SubmissionControll
 
     // Public routes (no authentication required)
     // Apply both basic and enhanced rate limiting
+
+    // Formspree-style URL: /f/:endpointSlug
+    router.post('/f/:endpointSlug',
+        formSubmissionRateLimit,
+        rateLimiters.formSpecific.middleware(),
+        submitToForm
+    );
+
+    // Original API-style URL: /forms/:endpointSlug/submit
     router.post('/forms/:endpointSlug/submit',
         formSubmissionRateLimit,
         rateLimiters.formSpecific.middleware(),

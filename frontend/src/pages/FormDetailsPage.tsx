@@ -134,8 +134,8 @@ export function FormDetailsPage() {
         }
     }, [id]);
 
-    const generateEndpointUrl = (formId: string) => {
-        return `https://localhost:4001/api/${formId}`;
+    const generateEndpointUrl = (endpointSlug: string) => {
+        return `https://localhost:4001/f/${endpointSlug}`;
     };
 
     const formatSubmissionDate = (dateString: string) => {
@@ -255,12 +255,12 @@ export function FormDetailsPage() {
                         <div className="flex items-center">
                             <input
                                 type="text"
-                                value={generateEndpointUrl(form.id)}
+                                value={generateEndpointUrl(form.endpointSlug)}
                                 readOnly
                                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500"
                             />
                             <button
-                                onClick={() => handleCopy(generateEndpointUrl(form.id))}
+                                onClick={() => handleCopy(generateEndpointUrl(form.endpointSlug))}
                                 className="ml-2 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
                             >
                                 Copy
@@ -362,7 +362,7 @@ export function FormDetailsPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">HTML Form Snippet</h3>
                 <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                     <pre className="text-green-400 text-sm">
-                        {`<form action="${generateEndpointUrl(form.id)}" method="POST">
+                        {`<form action="${generateEndpointUrl(form.endpointSlug)}" method="POST">
     <input type="text" name="name" placeholder="Your Name" required>
     <input type="email" name="email" placeholder="Your Email" required>
     <textarea name="message" placeholder="Your Message" required></textarea>
@@ -371,7 +371,7 @@ export function FormDetailsPage() {
                     </pre>
                 </div>
                 <button
-                    onClick={() => handleCopy(`<form action="${generateEndpointUrl(form.id)}" method="POST">
+                    onClick={() => handleCopy(`<form action="${generateEndpointUrl(form.endpointSlug)}" method="POST">
     <input type="text" name="name" placeholder="Your Name" required>
     <input type="email" name="email" placeholder="Your Email" required>
     <textarea name="message" placeholder="Your Message" required></textarea>
@@ -394,7 +394,7 @@ form.addEventListener('submit', async (e) => {
     const formData = new FormData(form);
     
     try {
-        const response = await fetch('${generateEndpointUrl(form.id)}', {
+        const response = await fetch('${generateEndpointUrl(form.endpointSlug)}', {
             method: 'POST',
             body: formData
         });
@@ -416,7 +416,7 @@ form.addEventListener('submit', async (e) => {
     const formData = new FormData(form);
     
     try {
-        const response = await fetch('${generateEndpointUrl(form.id)}', {
+        const response = await fetch('${generateEndpointUrl(form.endpointSlug)}', {
             method: 'POST',
             body: formData
         });
@@ -612,12 +612,12 @@ form.addEventListener('submit', async (e) => {
                         <div className="flex items-center">
                             <input
                                 type="text"
-                                value={generateEndpointUrl(form.id)}
+                                value={generateEndpointUrl(form.endpointSlug)}
                                 readOnly
                                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500"
                             />
                             <button
-                                onClick={() => handleCopy(generateEndpointUrl(form.id))}
+                                onClick={() => handleCopy(generateEndpointUrl(form.endpointSlug))}
                                 className="ml-2 px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
                             >
                                 Copy
