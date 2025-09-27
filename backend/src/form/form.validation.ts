@@ -36,7 +36,7 @@ export const formSettingsSchema = z.object({
 // Create form validation
 export const createFormSchema = z.object({
     name: z.string().min(1, 'Form name is required').max(100, 'Name must be less than 100 characters'),
-    description: z.string().max(500, 'Description must be less than 500 characters').optional(),
+    description: z.string().max(500, 'Description must be less than 500 characters').or(z.literal('')).or(z.null()).optional().transform(val => val === '' || val === null ? undefined : val),
     endpointSlug: z.string()
         .min(3, 'Endpoint slug must be at least 3 characters')
         .max(50, 'Endpoint slug must be less than 50 characters')
@@ -49,7 +49,7 @@ export const createFormSchema = z.object({
 // Update form validation
 export const updateFormSchema = z.object({
     name: z.string().min(1, 'Form name is required').max(100, 'Name must be less than 100 characters').optional(),
-    description: z.string().max(500, 'Description must be less than 500 characters').optional(),
+    description: z.string().max(500, 'Description must be less than 500 characters').or(z.literal('')).or(z.null()).optional().transform(val => val === '' || val === null ? undefined : val),
     endpointSlug: z.string()
         .min(3, 'Endpoint slug must be at least 3 characters')
         .max(50, 'Endpoint slug must be less than 50 characters')

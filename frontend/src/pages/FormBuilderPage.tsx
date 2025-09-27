@@ -142,6 +142,7 @@ export function FormBuilderPage() {
 
         const submitData = {
             ...formData,
+            description: formData.description.trim() || null,
             settings: {
                 ...formData.settings,
                 notificationEmail: notificationEmails.join(',')

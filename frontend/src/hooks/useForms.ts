@@ -28,6 +28,7 @@ export function useForms() {
         setError(null);
 
         try {
+            console.log('Sending form data:', formData);
             const response = await api.post('/api/forms', formData);
 
             if (response.data.success) {
@@ -37,7 +38,16 @@ export function useForms() {
                 return null;
             }
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to create form');
+            console.error('Error creating form:', err);
+            console.error('Error response:', err.response?.data);
+
+            // Show detailed validation errors if available
+            if (err.response?.data?.errors) {
+                const errorMessages = err.response.data.errors.map((e: any) => `${e.field}: ${e.message}`).join(', ');
+                setError(`Validation failed: ${errorMessages}`);
+            } else {
+                setError(err.response?.data?.message || 'Failed to create form');
+            }
             return null;
         } finally {
             setLoading(false);

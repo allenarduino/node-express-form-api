@@ -80,9 +80,11 @@ export class FormController {
      */
     async createForm(req: Request, res: Response): Promise<void> {
         try {
+            console.log('Create form request body:', JSON.stringify(req.body, null, 2));
             // Validate input
             const validationResult = createFormSchema.safeParse(req.body);
             if (!validationResult.success) {
+                console.log('Validation errors:', validationResult.error.issues);
                 res.status(400).json({
                     success: false,
                     message: 'Validation failed',

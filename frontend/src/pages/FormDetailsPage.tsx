@@ -773,21 +773,27 @@ form.addEventListener('submit', async (e) => {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Form Configuration</h3>
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Form Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Form Name <span className="text-red-500">*</span>
+                        </label>
                         <input
                             type="text"
                             value={editData.name}
                             onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
+                            required
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Description <span className="text-gray-400">(Optional)</span>
+                        </label>
                         <textarea
                             value={editData.description}
                             onChange={(e) => setEditData({ ...editData, description: e.target.value })}
                             rows={3}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
+                            placeholder="Enter a description for your form (optional)"
                         />
                     </div>
                     <div className="flex items-center">
