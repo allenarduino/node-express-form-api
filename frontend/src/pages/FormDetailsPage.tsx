@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { useForms } from '../hooks/useForms';
-import { useAuth } from '../context/AuthContext';
 import { useSubmissions } from '../hooks/useSubmissions';
 import api from '../lib/api';
 
-interface Form {
+interface ApiForm {
     id: string;
     name: string;
     description: string | null;
@@ -17,8 +16,8 @@ interface Form {
     updatedAt: string;
     submissionCount: number;
     settings?: {
-        allowMultipleSubmissions: boolean;
-        requireEmailNotification: boolean;
+        allowMultipleSubmissions?: boolean;
+        requireEmailNotification?: boolean;
         notificationEmail?: string;
         redirectUrl?: string;
         customCss?: string;
@@ -32,6 +31,8 @@ interface Form {
         webhookSecret?: string;
     };
 }
+
+interface Form extends ApiForm { }
 
 interface FormStatistics {
     totalSubmissions: number;
@@ -57,7 +58,6 @@ export function FormDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { getFormById, updateForm, deleteForm } = useForms();
-    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('overview');
     const [form, setForm] = useState<Form | null>(null);
     const [statistics, setStatistics] = useState<FormStatistics | null>(null);
@@ -72,6 +72,8 @@ export function FormDetailsPage() {
     const [saveError, setSaveError] = useState<string | null>(null);
     const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set());
     const [isAllSelected, setIsAllSelected] = useState(false);
+    const [notificationEmails, setNotificationEmails] = useState<string[]>([]);
+    const [newEmail, setNewEmail] = useState('');
 
     // Fetch submissions data
     const { data: submissionsData, loading: submissionsLoading, error: submissionsError, refetch: refetchSubmissions } = useSubmissions(id || '', 1, 10);
@@ -79,17 +81,23 @@ export function FormDetailsPage() {
     // Function to check if form data has changed
     const checkForChanges = () => {
         if (!form) return false;
+
+        // Check current notification emails against form settings
+        const currentEmails = form.settings?.notificationEmail ?
+            form.settings.notificationEmail.split(',').filter(email => email.trim()) : [];
+
         return (
             editData.name !== form.name ||
             editData.description !== (form.description || '') ||
-            editData.isActive !== form.isActive
+            editData.isActive !== form.isActive ||
+            JSON.stringify(notificationEmails.sort()) !== JSON.stringify(currentEmails.sort())
         );
     };
 
-    // Update hasChanges when editData changes
+    // Update hasChanges when editData or notificationEmails change
     React.useEffect(() => {
         setHasChanges(checkForChanges());
-    }, [editData, form]);
+    }, [editData, form, notificationEmails]);
 
     // Function to fetch real form statistics
     const fetchFormStatistics = async (formId: string) => {
@@ -112,14 +120,27 @@ export function FormDetailsPage() {
             const fetchFormData = async () => {
                 try {
                     // Fetch real form data
-                    const formData = await getFormById(id);
+                    const formData = await getFormById(id) as ApiForm;
                     if (formData) {
-                        setForm(formData);
+                        setForm({
+                            ...formData,
+                            settings: formData.settings || {
+                                allowMultipleSubmissions: false,
+                                requireEmailNotification: false
+                            }
+                        });
                         setEditData({
                             name: formData.name,
                             description: formData.description || '',
                             isActive: formData.isActive,
                         });
+
+                        // Initialize notification emails from form settings
+                        if (formData.settings?.notificationEmail) {
+                            setNotificationEmails(formData.settings.notificationEmail.split(',').filter((email: string) => email.trim()));
+                        } else {
+                            setNotificationEmails([]);
+                        }
                         // Fetch real statistics
                         await fetchFormStatistics(id);
                     } else {
@@ -267,6 +288,32 @@ export function FormDetailsPage() {
         }
     };
 
+    // Email notification functions
+    const addNotificationEmail = () => {
+        if (newEmail && !notificationEmails.includes(newEmail)) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailRegex.test(newEmail)) {
+                setNotificationEmails(prev => [...prev, newEmail]);
+                setNewEmail('');
+                setHasChanges(true);
+            } else {
+                alert('Please enter a valid email address');
+            }
+        }
+    };
+
+    const removeNotificationEmail = (emailToRemove: string) => {
+        setNotificationEmails(prev => prev.filter(email => email !== emailToRemove));
+        setHasChanges(true);
+    };
+
+    const handleEmailKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addNotificationEmail();
+        }
+    };
+
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text);
         // You could add a toast notification here
@@ -287,6 +334,10 @@ export function FormDetailsPage() {
                 name: editData.name,
                 description: editData.description || null,
                 isActive: editData.isActive,
+                settings: {
+                    ...form.settings,
+                    notificationEmail: notificationEmails.length > 0 ? notificationEmails.join(',') : undefined,
+                }
             };
 
             const updatedForm = await updateForm(form.id, updateData);
@@ -909,6 +960,17 @@ form.addEventListener('submit', async (e) => {
                             <input
                                 type="checkbox"
                                 checked={form.settings?.requireEmailNotification || false}
+                                onChange={(e) => {
+                                    // Update the form settings directly
+                                    setForm(prev => prev ? {
+                                        ...prev,
+                                        settings: {
+                                            ...prev.settings,
+                                            requireEmailNotification: e.target.checked
+                                        }
+                                    } : null);
+                                    setHasChanges(true);
+                                }}
                                 className="sr-only peer"
                             />
                             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
@@ -918,15 +980,20 @@ form.addEventListener('submit', async (e) => {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Notification Recipients</label>
                         <div className="space-y-2">
-                            {form.settings?.notificationEmail ? (
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                                    <span className="text-sm text-gray-900">{form.settings.notificationEmail}</span>
-                                    <button className="text-red-600 hover:text-red-800">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
+                            {notificationEmails.length > 0 ? (
+                                notificationEmails.map((email, index) => (
+                                    <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                                        <span className="text-sm text-gray-900">{email}</span>
+                                        <button
+                                            onClick={() => removeNotificationEmail(email)}
+                                            className="text-red-600 hover:text-red-800"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))
                             ) : (
                                 <div className="text-sm text-gray-500">No recipients configured</div>
                             )}
@@ -934,10 +1001,15 @@ form.addEventListener('submit', async (e) => {
                                 <input
                                     type="email"
                                     placeholder="Add email address"
-                                    defaultValue={user?.email || ''}
+                                    value={newEmail}
+                                    onChange={(e) => setNewEmail(e.target.value)}
+                                    onKeyPress={handleEmailKeyPress}
                                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
                                 />
-                                <button className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800">
+                                <button
+                                    onClick={addNotificationEmail}
+                                    className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
+                                >
                                     Add
                                 </button>
                             </div>
