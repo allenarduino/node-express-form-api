@@ -41,11 +41,9 @@ export const formSettingsSchema = z.object({
 // Submission payload validation
 export const submissionPayloadSchema = z.record(z.string(), z.any());
 
-// Create submission validation
+// Create submission validation - completely dynamic
 export const createSubmissionSchema = z.object({
-    formData: submissionPayloadSchema,
-    name: z.string().optional(),
-    email: z.string().email().optional(),
+    formData: submissionPayloadSchema, // All form fields stored here dynamically
     honeypot: z.string().optional(), // For spam protection
     recaptcha_token: z.string().optional(), // reCAPTCHA token
     'g-recaptcha-response': z.string().optional(), // Alternative reCAPTCHA field name

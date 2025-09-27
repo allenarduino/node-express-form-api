@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Form Fields Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            border: 1px solid #bee5eb;
+        }
+        .endpoint-info {
+            background-color: #e2e3e5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dynamic Form Fields Test</h1>
+    
+    <div class="container">
+        <h2>🧪 Test 1: Basic Contact Form</h2>
+        <div class="endpoint-info">
+            <strong>Fields:</strong> name, email, message<br>
+            <strong>Endpoint:</strong> http://localhost:4001/api/f/w746ftxj
+        </div>
+        
+        <form id="basicForm">
+            <div class="form-group">
+                <label for="basicName">Name:</label>
+                <input type="text" id="basicName" name="name" placeholder="Your Name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="basicEmail">Email:</label>
+                <input type="email" id="basicEmail" name="email" placeholder="Your Email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="basicMessage">Message:</label>
+                <textarea id="basicMessage" name="message" placeholder="Your Message" rows="4" required></textarea>
+            </div>
+            
+            <button type="button" onclick="submitForm('basicForm')">Submit Basic Form</button>
+        </form>
+        
+        <div id="basicResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>🏢 Test 2: Business Registration Form</h2>
+        <div class="endpoint-info">
+            <strong>Fields:</strong> companyName, contactPerson, email, phone, industry, website, employees, message<br>
+            <strong>Endpoint:</strong> http://localhost:4001/api/f/w746ftxj
+        </div>
+        
+        <form id="businessForm">
+            <div class="form-group">
+                <label for="companyName">Company Name:</label>
+                <input type="text" id="companyName" name="companyName" placeholder="Your Company Name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="contactPerson">Contact Person:</label>
+                <input type="text" id="contactPerson" name="contactPerson" placeholder="Your Name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="businessEmail">Email:</label>
+                <input type="email" id="businessEmail" name="email" placeholder="your@company.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="industry">Industry:</label>
+                <select id="industry" name="industry" required>
+                    <option value="">Select Industry</option>
+                    <option value="technology">Technology</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="finance">Finance</option>
+                    <option value="education">Education</option>
+                    <option value="retail">Retail</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="website">Website:</label>
+                <input type="url" id="website" name="website" placeholder="https://yourcompany.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="employees">Number of Employees:</label>
+                <select id="employees" name="employees" required>
+                    <option value="">Select Size</option>
+                    <option value="1-10">1-10</option>
+                    <option value="11-50">11-50</option>
+                    <option value="51-200">51-200</option>
+                    <option value="201-1000">201-1000</option>
+                    <option value="1000+">1000+</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="businessMessage">Message:</label>
+                <textarea id="businessMessage" name="message" placeholder="Tell us about your business needs" rows="4" required></textarea>
+            </div>
+            
+            <button type="button" onclick="submitForm('businessForm')">Submit Business Form</button>
+        </form>
+        
+        <div id="businessResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>🎓 Test 3: Student Application Form</h2>
+        <div class="endpoint-info">
+            <strong>Fields:</strong> firstName, lastName, studentId, email, phone, major, year, gpa, interests, essay<br>
+            <strong>Endpoint:</strong> http://localhost:4001/api/f/w746ftxj
+        </div>
+        
+        <form id="studentForm">
+            <div class="form-group">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" name="firstName" placeholder="John" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" name="lastName" placeholder="Doe" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="studentId">Student ID:</label>
+                <input type="text" id="studentId" name="studentId" placeholder="12345678" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="studentEmail">Email:</label>
+                <input type="email" id="studentEmail" name="email" placeholder="john.doe@university.edu" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="studentPhone">Phone:</label>
+                <input type="tel" id="studentPhone" name="phone" placeholder="(555) 123-4567" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="major">Major:</label>
+                <input type="text" id="major" name="major" placeholder="Computer Science" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="year">Academic Year:</label>
+                <select id="year" name="year" required>
+                    <option value="">Select Year</option>
+                    <option value="freshman">Freshman</option>
+                    <option value="sophomore">Sophomore</option>
+                    <option value="junior">Junior</option>
+                    <option value="senior">Senior</option>
+                    <option value="graduate">Graduate</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="gpa">GPA:</label>
+                <input type="number" id="gpa" name="gpa" placeholder="3.5" step="0.01" min="0" max="4" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="interests">Interests:</label>
+                <input type="text" id="interests" name="interests" placeholder="AI, Machine Learning, Web Development" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="essay">Personal Statement:</label>
+                <textarea id="essay" name="essay" placeholder="Tell us about your goals and why you're interested in this program" rows="6" required></textarea>
+            </div>
+            
+            <button type="button" onclick="submitForm('studentForm')">Submit Student Form</button>
+        </form>
+        
+        <div id="studentResult"></div>
+    </div>
+
+    <div class="container">
+        <h2>📊 Dynamic Table Test Results</h2>
+        <div class="info">
+            <strong>Instructions:</strong><br>
+            1. Submit each form above with different field combinations<br>
+            2. Check your FormAPI dashboard submissions tab<br>
+            3. Watch the table dynamically add columns for each new field type<br>
+            4. Notice how the table adapts to completely different form structures
+        </div>
+    </div>
+
+    <script>
+        async function submitForm(formId) {
+            const form = document.getElementById(formId);
+            const resultDiv = document.getElementById(formId.replace('Form', 'Result'));
+            
+            // Create URLSearchParams for application/x-www-form-urlencoded
+            const formData = new URLSearchParams();
+            const formElements = form.querySelectorAll('input, textarea, select');
+            
+            formElements.forEach(element => {
+                if (element.name && element.value) {
+                    formData.append(element.name, element.value);
+                }
+            });
+            
+            try {
+                const response = await fetch('http://localhost:4001/api/f/w746ftxj', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ Form submitted successfully!<br><strong>Response:</strong><br><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+                    form.reset();
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ Error:<br><strong>Response:</strong><br><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Network Error: ' + error.message + '</div>';
+            }
+        }
+    </script>
+</body>
+</html>

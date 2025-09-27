@@ -47,12 +47,10 @@ export class SubmissionController {
                 (!contentType.includes('application/json') && Object.keys(req.body).length > 0);
 
             if (isHtmlForm) {
-                // For HTML forms, wrap the form data in a formData object
-                const { name, email, honeypot, 'g-recaptcha-response': recaptchaResponse, ...formFields } = req.body;
+                // For HTML forms, store ALL fields dynamically in formData
+                const { honeypot, 'g-recaptcha-response': recaptchaResponse, ...allFormFields } = req.body;
                 submissionData = {
-                    formData: formFields,
-                    name,
-                    email,
+                    formData: allFormFields, // Store ALL fields dynamically
                     honeypot,
                     'g-recaptcha-response': recaptchaResponse
                 };
