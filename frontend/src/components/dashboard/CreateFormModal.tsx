@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Modal } from '../ui/Modal';
 import { useForms } from '../../hooks/useForms';
 
@@ -15,7 +14,6 @@ interface FormData {
 }
 
 export function CreateFormModal({ isOpen, onClose, onSuccess }: CreateFormModalProps) {
-    const navigate = useNavigate();
     const [formData, setFormData] = useState<FormData>({
         name: '',
         description: '',
@@ -49,8 +47,6 @@ export function CreateFormModal({ isOpen, onClose, onSuccess }: CreateFormModalP
         if (result) {
             onSuccess();
             onClose();
-            // Navigate to form builder for further configuration
-            navigate(`/forms/${result.id}/edit`);
         }
     };
 
