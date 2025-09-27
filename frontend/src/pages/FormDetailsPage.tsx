@@ -70,6 +70,8 @@ export function FormDetailsPage() {
     const [hasChanges, setHasChanges] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set());
+    const [isAllSelected, setIsAllSelected] = useState(false);
 
     // Fetch submissions data
     const { data: submissionsData, loading: submissionsLoading, error: submissionsError, refetch: refetchSubmissions } = useSubmissions(id || '', 1, 10);
@@ -163,6 +165,58 @@ export function FormDetailsPage() {
                 return 'bg-gray-100 text-gray-800';
             default:
                 return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    // Selection handlers
+    const handleSelectAll = () => {
+        if (isAllSelected) {
+            setSelectedSubmissions(new Set());
+            setIsAllSelected(false);
+        } else {
+            const allIds = new Set(submissionsData?.submissions.map(s => s.id) || []);
+            setSelectedSubmissions(allIds);
+            setIsAllSelected(true);
+        }
+    };
+
+    const handleSelectSubmission = (submissionId: string, event?: React.MouseEvent) => {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        const newSelected = new Set(selectedSubmissions);
+        if (newSelected.has(submissionId)) {
+            newSelected.delete(submissionId);
+        } else {
+            newSelected.add(submissionId);
+        }
+        setSelectedSubmissions(newSelected);
+        setIsAllSelected(newSelected.size === (submissionsData?.submissions.length || 0));
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedSubmissions.size === 0) return;
+
+        if (window.confirm(`Are you sure you want to delete ${selectedSubmissions.size} submission(s)? This action cannot be undone.`)) {
+            // TODO: Implement bulk delete API call
+            console.log('Bulk delete:', Array.from(selectedSubmissions));
+            // For now, just clear selection
+            setSelectedSubmissions(new Set());
+            setIsAllSelected(false);
+        }
+    };
+
+    const handleBulkSpam = async () => {
+        if (selectedSubmissions.size === 0) return;
+
+        if (window.confirm(`Are you sure you want to mark ${selectedSubmissions.size} submission(s) as spam?`)) {
+            // TODO: Implement bulk spam API call
+            console.log('Bulk spam:', Array.from(selectedSubmissions));
+            // For now, just clear selection
+            setSelectedSubmissions(new Set());
+            setIsAllSelected(false);
         }
     };
 
@@ -533,41 +587,116 @@ form.addEventListener('submit', async (e) => {
                             <p className="text-gray-500">Submissions will appear here once users start submitting to your form.</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        {columnOrder.map((fieldName) => (
-                                            <th key={fieldName} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                {formatFieldName(fieldName)}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {submissionsData.submissions.map((submission) => (
-                                        <tr key={submission.id} className="hover:bg-gray-50 transition-colors duration-150">
-                                            {columnOrder.map((fieldName) => (
-                                                <td key={fieldName} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {fieldName === 'status' ? (
-                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(submission.status)}`}>
-                                                            {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
-                                                        </span>
-                                                    ) : fieldName === 'submitted' ? (
-                                                        <span className="text-gray-500">
-                                                            {formatSubmissionDate(submission.createdAt)}
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-gray-900">
-                                                            {getFieldValue(submission, fieldName)}
-                                                        </span>
+                        <div className="space-y-4">
+                            {/* Bulk Actions Bar */}
+                            {selectedSubmissions.size > 0 && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
+                                    <div className="flex items-center">
+                                        <span className="text-sm font-medium text-red-800">
+                                            {selectedSubmissions.size} submission{selectedSubmissions.size > 1 ? 's' : ''} selected
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center space-x-3">
+                                        <button
+                                            onClick={handleBulkSpam}
+                                            className="px-3 py-1 text-sm font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
+                                        >
+                                            Mark as Spam
+                                        </button>
+                                        <button
+                                            onClick={handleBulkDelete}
+                                            className="px-3 py-1 text-sm font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-md transition-colors"
+                                        >
+                                            Delete
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedSubmissions(new Set());
+                                                setIsAllSelected(false);
+                                            }}
+                                            className="px-3 py-1 text-sm font-medium text-gray-600 hover:text-gray-800"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Table */}
+                            <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            {/* Selection Column */}
+                                            <th className="w-12 px-4 py-3">
+                                                <button
+                                                    onClick={handleSelectAll}
+                                                    className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${isAllSelected
+                                                        ? 'bg-red-500 border-red-500 text-white'
+                                                        : 'border-gray-300 hover:border-gray-400'
+                                                        }`}
+                                                >
+                                                    {isAllSelected && (
+                                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                        </svg>
                                                     )}
-                                                </td>
+                                                </button>
+                                            </th>
+
+
+                                            {/* Dynamic Data Columns */}
+                                            {columnOrder.map((fieldName) => (
+                                                <th key={fieldName} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    {formatFieldName(fieldName)}
+                                                </th>
                                             ))}
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {submissionsData.submissions.map((submission) => (
+                                            <tr key={submission.id} className="hover:bg-gray-50 transition-colors duration-150">
+                                                {/* Selection Checkbox */}
+                                                <td className="px-4 py-4">
+                                                    <button
+                                                        onClick={(e) => handleSelectSubmission(submission.id, e)}
+                                                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${selectedSubmissions.has(submission.id)
+                                                            ? 'bg-red-500 border-red-500 text-white'
+                                                            : 'border-gray-300 hover:border-gray-400'
+                                                            }`}
+                                                    >
+                                                        {selectedSubmissions.has(submission.id) && (
+                                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                            </svg>
+                                                        )}
+                                                    </button>
+                                                </td>
+
+
+                                                {/* Dynamic Data Cells */}
+                                                {columnOrder.map((fieldName) => (
+                                                    <td key={fieldName} className="px-6 py-4 text-sm text-gray-900">
+                                                        {fieldName === 'submitted' ? (
+                                                            <span className="text-gray-500">
+                                                                {formatSubmissionDate(submission.createdAt)}
+                                                            </span>
+                                                        ) : fieldName === 'status' ? (
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(submission.status)}`}>
+                                                                {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-900">
+                                                                {getFieldValue(submission, fieldName)}
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
                 </div>
