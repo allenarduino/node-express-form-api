@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { useForms } from '../hooks/useForms';
+import { useAuth } from '../context/AuthContext';
 import { useSubmissions } from '../hooks/useSubmissions';
 import api from '../lib/api';
 
@@ -58,6 +59,7 @@ export function FormDetailsPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { getFormById, updateForm, deleteForm } = useForms();
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('overview');
     const [form, setForm] = useState<Form | null>(null);
     const [statistics, setStatistics] = useState<FormStatistics | null>(null);
@@ -137,9 +139,12 @@ export function FormDetailsPage() {
 
                         // Initialize notification emails from form settings
                         if (formData.settings?.notificationEmail) {
-                            setNotificationEmails(formData.settings.notificationEmail.split(',').filter((email: string) => email.trim()));
+                            const existingEmails = formData.settings.notificationEmail.split(',').filter((email: string) => email.trim());
+                            setNotificationEmails(existingEmails);
                         } else {
-                            setNotificationEmails([]);
+                            // Add current user's email as default if no emails are configured
+                            const defaultEmails = user?.email ? [user.email] : [];
+                            setNotificationEmails(defaultEmails);
                         }
                         // Fetch real statistics
                         await fetchFormStatistics(id);
@@ -1000,7 +1005,7 @@ form.addEventListener('submit', async (e) => {
                             <div className="flex space-x-2">
                                 <input
                                     type="email"
-                                    placeholder="Add email address"
+                                    placeholder={user?.email || "Add email address"}
                                     value={newEmail}
                                     onChange={(e) => setNewEmail(e.target.value)}
                                     onKeyPress={handleEmailKeyPress}
