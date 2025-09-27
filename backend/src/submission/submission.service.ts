@@ -254,7 +254,7 @@ export class SubmissionService {
         // Prepare spam protection configuration
         const spamConfig: SpamProtectionConfig = {
             ...(spamProtection.honeypot && { honeypotField: 'honeypot' }),
-            enableRecaptcha: false, // Disable reCAPTCHA for now
+            enableRecaptcha: spamProtection.enabled && !!process.env.RECAPTCHA_SECRET_KEY,
             ...(process.env.RECAPTCHA_SECRET_KEY && { recaptchaSecret: process.env.RECAPTCHA_SECRET_KEY }),
             rateLimitPerIp: spamProtection.rateLimit || 10,
             rateLimitPerForm: 50, // Default form limit

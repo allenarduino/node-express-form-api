@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>reCAPTCHA with JavaScript</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">Dynamic reCAPTCHA Form</h1>
+        
+        <form id="contactForm" class="space-y-4">
+            <!-- Visible form fields -->
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    placeholder="Your Name" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
+                >
+            </div>
+            
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="your@email.com" 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
+                >
+            </div>
+            
+            <div>
+                <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea 
+                    id="message" 
+                    name="message" 
+                    rows="4" 
+                    placeholder="Your message..." 
+                    required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
+                ></textarea>
+            </div>
+            
+            <!-- reCAPTCHA container -->
+            <div id="recaptcha-container"></div>
+            
+            <button 
+                type="submit" 
+                class="w-full bg-gray-900 text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-colors"
+            >
+                Send Message
+            </button>
+        </form>
+        
+        <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
+            <h3 class="text-sm font-medium text-green-900 mb-2">🔧 JavaScript Implementation:</h3>
+            <pre class="text-xs text-green-700 bg-green-100 p-2 rounded overflow-x-auto"><code>// Load reCAPTCHA script
+function loadRecaptcha() {
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+}
+
+// Initialize reCAPTCHA
+window.onRecaptchaLoad = function() {
+    grecaptcha.render('recaptcha-container', {
+        'sitekey': 'YOUR_RECAPTCHA_SITE_KEY'
+    });
+}
+
+// Get token before form submission
+function getRecaptchaToken() {
+    return new Promise((resolve) => {
+        grecaptcha.ready(() => {
+            grecaptcha.execute('YOUR_RECAPTCHA_SITE_KEY', {action: 'submit'})
+                .then(token => resolve(token));
+        });
+    });
+}</code></pre>
+        </div>
+    </div>
+
+    <script>
+        // Your reCAPTCHA site key (replace with your actual key)
+        const RECAPTCHA_SITE_KEY = 'YOUR_RECAPTCHA_SITE_KEY';
+        
+        // Load reCAPTCHA script
+        function loadRecaptcha() {
+            const script = document.createElement('script');
+            script.src = 'https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit';
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+        
+        // Initialize reCAPTCHA when script loads
+        window.onRecaptchaLoad = function() {
+            grecaptcha.render('recaptcha-container', {
+                'sitekey': RECAPTCHA_SITE_KEY,
+                'theme': 'light',
+                'size': 'normal'
+            });
+        };
+        
+        // Load reCAPTCHA when page loads
+        loadRecaptcha();
+        
+        // Handle form submission
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get reCAPTCHA token
+            const recaptchaToken = grecaptcha.getResponse();
+            if (!recaptchaToken) {
+                alert('Please complete the reCAPTCHA verification');
+                return;
+            }
+            
+            // Create FormData
+            const formData = new FormData(this);
+            formData.append('g-recaptcha-response', recaptchaToken);
+            
+            // Add honeypot field
+            const honeypot = document.createElement('input');
+            honeypot.type = 'text';
+            honeypot.name = 'honeypot';
+            honeypot.style.cssText = 'position: absolute; left: -9999px; opacity: 0; pointer-events: none;';
+            this.appendChild(honeypot);
+            
+            try {
+                // Submit form
+                const response = await fetch('http://localhost:4001/api/f/your-endpoint-slug', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Message sent successfully!');
+                    this.reset();
+                    grecaptcha.reset(); // Reset reCAPTCHA
+                } else {
+                    alert('Failed to send message: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to send message. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>reCAPTCHA Setup Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">🔒 reCAPTCHA Setup Guide</h1>
+        
+        <!-- Step 1: Get reCAPTCHA Keys -->
+        <div class="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+            <h2 class="text-xl font-semibold text-blue-900 mb-4">Step 1: Get reCAPTCHA Keys from Google</h2>
+            <ol class="space-y-3 text-blue-700">
+                <li class="flex items-start">
+                    <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</span>
+                    Go to <a href="https://www.google.com/recaptcha/admin" target="_blank" class="underline font-medium">Google reCAPTCHA Admin Console</a>
+                </li>
+                <li class="flex items-start">
+                    <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</span>
+                    Click <strong>"Create"</strong> to create a new site
+                </li>
+                <li class="flex items-start">
+                    <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</span>
+                    Choose <strong>reCAPTCHA v2</strong> → <strong>"I'm not a robot" Checkbox</strong>
+                </li>
+                <li class="flex items-start">
+                    <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</span>
+                    Add your domains (e.g., <code class="bg-blue-100 px-2 py-1 rounded">localhost</code>, <code class="bg-blue-100 px-2 py-1 rounded">yourdomain.com</code>)
+                </li>
+                <li class="flex items-start">
+                    <span class="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">5</span>
+                    Submit and copy your <strong>Site Key</strong> and <strong>Secret Key</strong>
+                </li>
+            </ol>
+        </div>
+        
+        <!-- Step 2: Backend Configuration -->
+        <div class="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg">
+            <h2 class="text-xl font-semibold text-green-900 mb-4">Step 2: Configure Backend Environment</h2>
+            <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm">
+                <div class="text-gray-400"># Add to your .env file</div>
+                <div>RECAPTCHA_SECRET_KEY=<span class="text-yellow-300">your_secret_key_here</span></div>
+            </div>
+            <p class="mt-3 text-green-700">Replace <code class="bg-green-100 px-2 py-1 rounded">your_secret_key_here</code> with your actual secret key from Google.</p>
+        </div>
+        
+        <!-- Step 3: Frontend Implementation -->
+        <div class="mb-8 p-6 bg-purple-50 border border-purple-200 rounded-lg">
+            <h2 class="text-xl font-semibold text-purple-900 mb-4">Step 3: Add reCAPTCHA to Your Form</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <h3 class="font-semibold text-purple-800 mb-2">Option A: HTML Form (Simple)</h3>
+                    <div class="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                        <div class="text-gray-400">&lt;!-- Add reCAPTCHA script --&gt;</div>
+                        <div>&lt;script src="https://www.google.com/recaptcha/api.js" async defer&gt;&lt;/script&gt;</div>
+                        <div class="text-gray-400 mt-2">&lt;!-- Add reCAPTCHA widget --&gt;</div>
+                        <div>&lt;div class="g-recaptcha" data-sitekey="<span class="text-yellow-300">YOUR_SITE_KEY</span>"&gt;&lt;/div&gt;</div>
+                        <div class="text-gray-400 mt-2">&lt;!-- Submit button --&gt;</div>
+                        <div>&lt;button type="submit"&gt;Send Message&lt;/button&gt;</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-purple-800 mb-2">Option B: JavaScript Form (Advanced)</h3>
+                    <div class="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                        <div class="text-gray-400">// Get reCAPTCHA token before submission</div>
+                        <div>const recaptchaToken = grecaptcha.getResponse();</div>
+                        <div class="text-gray-400">// Add token to form data</div>
+                        <div>formData.append('g-recaptcha-response', recaptchaToken);</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 4: Enable in Dashboard -->
+        <div class="mb-8 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <h2 class="text-xl font-semibold text-yellow-900 mb-4">Step 4: Enable CAPTCHA in Form Settings</h2>
+            <ol class="space-y-2 text-yellow-700">
+                <li>1. Go to your form's <strong>Settings</strong> tab</li>
+                <li>2. Scroll to <strong>Security Settings</strong></li>
+                <li>3. Toggle <strong>"Enable CAPTCHA"</strong> to ON</li>
+                <li>4. Click <strong>"Save"</strong> to apply changes</li>
+            </ol>
+        </div>
+        
+        <!-- Testing -->
+        <div class="mb-8 p-6 bg-red-50 border border-red-200 rounded-lg">
+            <h2 class="text-xl font-semibold text-red-900 mb-4">Testing Your Implementation</h2>
+            <div class="space-y-3 text-red-700">
+                <div class="flex items-start">
+                    <span class="text-red-600 mr-2">✅</span>
+                    <span>Form submits successfully when reCAPTCHA is completed</span>
+                </div>
+                <div class="flex items-start">
+                    <span class="text-red-600 mr-2">❌</span>
+                    <span>Form is rejected when reCAPTCHA is not completed</span>
+                </div>
+                <div class="flex items-start">
+                    <span class="text-red-600 mr-2">❌</span>
+                    <span>Form is rejected with invalid reCAPTCHA token</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Troubleshooting -->
+        <div class="p-6 bg-gray-50 border border-gray-200 rounded-lg">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">🔧 Troubleshooting</h2>
+            <div class="space-y-3 text-gray-700">
+                <div>
+                    <strong>Error: "reCAPTCHA token required"</strong>
+                    <p class="text-sm text-gray-600">Make sure you've added the reCAPTCHA widget to your form and completed the verification.</p>
+                </div>
+                <div>
+                    <strong>Error: "reCAPTCHA verification failed"</strong>
+                    <p class="text-sm text-gray-600">Check that your secret key is correctly set in the backend environment variables.</p>
+                </div>
+                <div>
+                    <strong>reCAPTCHA not showing</strong>
+                    <p class="text-sm text-gray-600">Verify your site key is correct and your domain is registered with Google reCAPTCHA.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <a href="captcha-example.html" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors mr-4">
+                View HTML Example
+            </a>
+            <a href="captcha-js-example.html" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                View JavaScript Example
+            </a>
+        </div>
+    </div>
+</body>
+</html>

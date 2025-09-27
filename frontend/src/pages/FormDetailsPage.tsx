@@ -77,6 +77,11 @@ export function FormDetailsPage() {
     const [notificationEmails, setNotificationEmails] = useState<string[]>([]);
     const [newEmail, setNewEmail] = useState('');
     const [redirectUrl, setRedirectUrl] = useState('');
+    const [spamProtection, setSpamProtection] = useState({
+        enabled: false,
+        honeypot: false,
+        rateLimit: 10
+    });
 
     // Fetch submissions data
     const { data: submissionsData, loading: submissionsLoading, error: submissionsError, refetch: refetchSubmissions } = useSubmissions(id || '', 1, 10);
@@ -89,19 +94,24 @@ export function FormDetailsPage() {
         const currentEmails = form.settings?.notificationEmail ?
             form.settings.notificationEmail.split(',').filter(email => email.trim()) : [];
 
+        const currentSpamProtection = form.settings?.spamProtection || { enabled: false, honeypot: false, rateLimit: 10 };
+
         return (
             editData.name !== form.name ||
             editData.description !== (form.description || '') ||
             editData.isActive !== form.isActive ||
             JSON.stringify(notificationEmails.sort()) !== JSON.stringify(currentEmails.sort()) ||
-            redirectUrl !== (form.settings?.redirectUrl || '')
+            redirectUrl !== (form.settings?.redirectUrl || '') ||
+            spamProtection.enabled !== currentSpamProtection.enabled ||
+            spamProtection.honeypot !== currentSpamProtection.honeypot ||
+            spamProtection.rateLimit !== currentSpamProtection.rateLimit
         );
     };
 
-    // Update hasChanges when editData or notificationEmails change
+    // Update hasChanges when editData, notificationEmails, redirectUrl, or spamProtection change
     React.useEffect(() => {
         setHasChanges(checkForChanges());
-    }, [editData, form, notificationEmails]);
+    }, [editData, form, notificationEmails, redirectUrl, spamProtection]);
 
     // Function to fetch real form statistics
     const fetchFormStatistics = async (formId: string) => {
@@ -155,6 +165,18 @@ export function FormDetailsPage() {
                         } else {
                             // Set default redirect URL if none configured
                             setRedirectUrl('http://localhost:5173/success.html');
+                        }
+
+                        // Initialize spam protection from form settings
+                        if (formData.settings?.spamProtection) {
+                            setSpamProtection(formData.settings.spamProtection);
+                        } else {
+                            // Set default spam protection settings
+                            setSpamProtection({
+                                enabled: false,
+                                honeypot: false,
+                                rateLimit: 10
+                            });
                         }
                         // Fetch real statistics
                         await fetchFormStatistics(id);
@@ -353,6 +375,7 @@ export function FormDetailsPage() {
                     ...form.settings,
                     notificationEmail: notificationEmails.length > 0 ? notificationEmails.join(',') : undefined,
                     redirectUrl: redirectUrl || undefined,
+                    spamProtection: spamProtection,
                 }
             };
 
@@ -1071,7 +1094,13 @@ form.addEventListener('submit', async (e) => {
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
-                                checked={form.settings?.spamProtection?.enabled || false}
+                                checked={spamProtection.enabled}
+                                onChange={(e) => {
+                                    setSpamProtection(prev => ({
+                                        ...prev,
+                                        enabled: e.target.checked
+                                    }));
+                                }}
                                 className="sr-only peer"
                             />
                             <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
@@ -1088,13 +1117,45 @@ form.addEventListener('submit', async (e) => {
                         <p className="mt-1 text-sm text-gray-500">Comma-separated list of allowed domains</p>
                     </div>
 
+                    {/* Honeypot Setting */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <div className="text-sm font-medium text-gray-900">Enable Honeypot</div>
+                            <div className="text-sm text-gray-500">Add hidden field to catch bots</div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={spamProtection.honeypot}
+                                onChange={(e) => {
+                                    setSpamProtection(prev => ({
+                                        ...prev,
+                                        honeypot: e.target.checked
+                                    }));
+                                }}
+                                className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                        </label>
+                    </div>
+
+                    {/* Rate Limiting */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Rate Limiting</label>
-                        <select className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500">
-                            <option value="10">10 submissions per minute</option>
-                            <option value="100">100 submissions per hour</option>
-                            <option value="1000">1000 submissions per day</option>
-                        </select>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Rate Limiting (submissions per minute)</label>
+                        <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={spamProtection.rateLimit}
+                            onChange={(e) => {
+                                setSpamProtection(prev => ({
+                                    ...prev,
+                                    rateLimit: parseInt(e.target.value) || 10
+                                }));
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
+                        />
+                        <p className="mt-1 text-sm text-gray-500">Maximum submissions allowed per IP per minute</p>
                     </div>
 
                     <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
