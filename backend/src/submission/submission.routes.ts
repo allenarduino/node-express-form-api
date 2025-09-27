@@ -17,6 +17,9 @@ export function createSubmissionRoutes(submissionController?: SubmissionControll
     const getFormSubmissions = controller.getFormSubmissions.bind(controller);
     const getUserSubmissions = controller.getUserSubmissions.bind(controller);
     const updateSubmission = controller.updateSubmission.bind(controller);
+    const deleteSubmission = controller.deleteSubmission.bind(controller);
+    const bulkDeleteSubmissions = controller.bulkDeleteSubmissions.bind(controller);
+    const markSubmissionsAsSpam = controller.markSubmissionsAsSpam.bind(controller);
 
     // Public routes (no authentication required)
     // Apply both basic and enhanced rate limiting
@@ -47,6 +50,9 @@ export function createSubmissionRoutes(submissionController?: SubmissionControll
     router.get('/forms/:formId/submissions', authMiddleware, apiRateLimit, getFormSubmissions);
     router.get('/user/submissions', authMiddleware, apiRateLimit, getUserSubmissions);
     router.put('/submissions/:id', authMiddleware, apiRateLimit, updateSubmission);
+    router.delete('/submissions/:id', authMiddleware, apiRateLimit, deleteSubmission);
+    router.post('/submissions/bulk/delete', authMiddleware, apiRateLimit, bulkDeleteSubmissions);
+    router.post('/submissions/bulk/spam', authMiddleware, apiRateLimit, markSubmissionsAsSpam);
 
     return router;
 }

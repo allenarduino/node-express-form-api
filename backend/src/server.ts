@@ -178,6 +178,9 @@ const server = app.listen(PORT, () => {
     console.log('  DELETE /api/forms/:id - Delete form (protected)');
     console.log('  GET  /api/forms/slug/:endpointSlug - Get form by slug (public)');
     console.log('  POST /api/f/:endpointSlug - Submit to form (public, Formspree-style)');
+    console.log('  DELETE /api/submissions/:id - Delete submission (protected)');
+    console.log('  POST /api/submissions/bulk/delete - Bulk delete submissions (protected)');
+    console.log('  POST /api/submissions/bulk/spam - Mark submissions as spam (protected)');
     console.log('  POST /api/forms/:endpointSlug/submit - Submit to form (public)');
     console.log('  GET  /api/submissions/:id - Get submission by ID (protected)');
     console.log('  GET  /api/forms/:formId/submissions - Get form submissions (protected)');

@@ -184,6 +184,43 @@ export class SubmissionRepository {
     }
 
     /**
+     * Bulk delete submissions
+     * @param ids - Array of submission IDs to delete
+     * @returns Promise<number> - Number of deleted submissions
+     */
+    async bulkDelete(ids: string[]): Promise<number> {
+        const result = await this.prisma.submission.deleteMany({
+            where: {
+                id: {
+                    in: ids,
+                },
+            },
+        });
+        return result.count;
+    }
+
+    /**
+     * Bulk update submission status
+     * @param ids - Array of submission IDs to update
+     * @param status - New status to set
+     * @returns Promise<number> - Number of updated submissions
+     */
+    async bulkUpdateStatus(ids: string[], status: string): Promise<number> {
+        const result = await this.prisma.submission.updateMany({
+            where: {
+                id: {
+                    in: ids,
+                },
+            },
+            data: {
+                status,
+                updatedAt: new Date(),
+            },
+        });
+        return result.count;
+    }
+
+    /**
      * Check if a submission exists by ID
      * @param id - The submission ID to check
      * @returns Promise<boolean> - True if submission exists, false otherwise

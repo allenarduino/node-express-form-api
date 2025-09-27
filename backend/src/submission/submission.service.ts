@@ -44,8 +44,8 @@ export class SubmissionService {
         const submission = await this.submissionRepo.create({
             formId: '', // Will be set by controller
             payload: data.formData,
-            ...(data.name && { name: data.name }),
-            ...(data.email && { email: data.email }),
+            ...(data.formData.name && { name: data.formData.name }),
+            ...(data.formData.email && { email: data.formData.email }),
             ip,
             userAgent,
             status: 'new',
@@ -96,8 +96,8 @@ export class SubmissionService {
         const submission = await this.submissionRepo.create({
             formId: form.id,
             payload: data.formData,
-            ...(data.name && { name: data.name }),
-            ...(data.email && { email: data.email }),
+            ...(data.formData.name && { name: data.formData.name }),
+            ...(data.formData.email && { email: data.formData.email }),
             ip,
             userAgent,
             status: 'new',
@@ -110,7 +110,7 @@ export class SubmissionService {
         }
 
         // Queue auto-reply email if submitter provided email
-        if (data.email) {
+        if (data.formData.email) {
             await this.queueAutoReplyEmail(submission, form);
         }
 
@@ -181,6 +181,24 @@ export class SubmissionService {
      */
     async delete(id: string): Promise<Submission> {
         return this.submissionRepo.delete(id);
+    }
+
+    /**
+     * Bulk delete submissions
+     * @param ids - Array of submission IDs to delete
+     * @returns Promise<number> - Number of deleted submissions
+     */
+    async bulkDelete(ids: string[]): Promise<number> {
+        return this.submissionRepo.bulkDelete(ids);
+    }
+
+    /**
+     * Mark submissions as spam
+     * @param ids - Array of submission IDs to mark as spam
+     * @returns Promise<number> - Number of updated submissions
+     */
+    async markAsSpam(ids: string[]): Promise<number> {
+        return this.submissionRepo.bulkUpdateStatus(ids, 'spam');
     }
 
     /**

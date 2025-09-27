@@ -200,11 +200,25 @@ export function FormDetailsPage() {
         if (selectedSubmissions.size === 0) return;
 
         if (window.confirm(`Are you sure you want to delete ${selectedSubmissions.size} submission(s)? This action cannot be undone.`)) {
-            // TODO: Implement bulk delete API call
-            console.log('Bulk delete:', Array.from(selectedSubmissions));
-            // For now, just clear selection
-            setSelectedSubmissions(new Set());
-            setIsAllSelected(false);
+            try {
+                const response = await api.post('/api/submissions/bulk/delete', {
+                    submissionIds: Array.from(selectedSubmissions)
+                });
+
+                if (response.data.success) {
+                    // Clear selection and refresh data
+                    setSelectedSubmissions(new Set());
+                    setIsAllSelected(false);
+                    // Refresh submissions data
+                    refetchSubmissions();
+                    // Show success message (you could add a toast notification here)
+                    console.log(response.data.message);
+                }
+            } catch (error: any) {
+                console.error('Failed to delete submissions:', error);
+                // Show error message (you could add a toast notification here)
+                alert(`Failed to delete submissions: ${error.response?.data?.message || error.message}`);
+            }
         }
     };
 
@@ -212,11 +226,44 @@ export function FormDetailsPage() {
         if (selectedSubmissions.size === 0) return;
 
         if (window.confirm(`Are you sure you want to mark ${selectedSubmissions.size} submission(s) as spam?`)) {
-            // TODO: Implement bulk spam API call
-            console.log('Bulk spam:', Array.from(selectedSubmissions));
-            // For now, just clear selection
-            setSelectedSubmissions(new Set());
-            setIsAllSelected(false);
+            try {
+                const response = await api.post('/api/submissions/bulk/spam', {
+                    submissionIds: Array.from(selectedSubmissions)
+                });
+
+                if (response.data.success) {
+                    // Clear selection and refresh data
+                    setSelectedSubmissions(new Set());
+                    setIsAllSelected(false);
+                    // Refresh submissions data
+                    refetchSubmissions();
+                    // Show success message (you could add a toast notification here)
+                    console.log(response.data.message);
+                }
+            } catch (error: any) {
+                console.error('Failed to mark submissions as spam:', error);
+                // Show error message (you could add a toast notification here)
+                alert(`Failed to mark submissions as spam: ${error.response?.data?.message || error.message}`);
+            }
+        }
+    };
+
+    const handleDeleteSubmission = async (submissionId: string) => {
+        if (window.confirm('Are you sure you want to delete this submission? This action cannot be undone.')) {
+            try {
+                const response = await api.delete(`/api/submissions/${submissionId}`);
+
+                if (response.data.success) {
+                    // Refresh submissions data
+                    refetchSubmissions();
+                    // Show success message (you could add a toast notification here)
+                    console.log('Submission deleted successfully');
+                }
+            } catch (error: any) {
+                console.error('Failed to delete submission:', error);
+                // Show error message (you could add a toast notification here)
+                alert(`Failed to delete submission: ${error.response?.data?.message || error.message}`);
+            }
         }
     };
 
@@ -651,6 +698,11 @@ form.addEventListener('submit', async (e) => {
                                                     {formatFieldName(fieldName)}
                                                 </th>
                                             ))}
+
+                                            {/* Actions Column */}
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Actions
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
@@ -692,6 +744,16 @@ form.addEventListener('submit', async (e) => {
                                                         )}
                                                     </td>
                                                 ))}
+
+                                                {/* Actions Cell */}
+                                                <td className="px-6 py-4 text-sm text-gray-900">
+                                                    <button
+                                                        onClick={() => handleDeleteSubmission(submission.id)}
+                                                        className="text-red-600 hover:text-red-800 font-medium transition-colors"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>

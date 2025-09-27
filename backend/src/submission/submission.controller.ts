@@ -314,6 +314,111 @@ export class SubmissionController {
     }
 
     /**
+     * DELETE /api/submissions/:id
+     * Delete a single submission (protected)
+     */
+    async deleteSubmission(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+
+            if (!id) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Submission ID is required',
+                });
+                return;
+            }
+
+            const deletedSubmission = await this.submissionService.delete(id);
+
+            res.status(200).json({
+                success: true,
+                message: 'Submission deleted successfully',
+                data: {
+                    id: deletedSubmission.id,
+                    deletedAt: new Date().toISOString(),
+                },
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Failed to delete submission',
+                error: (error as Error).message,
+            });
+        }
+    }
+
+    /**
+     * POST /api/submissions/bulk/delete
+     * Bulk delete submissions (protected)
+     */
+    async bulkDeleteSubmissions(req: Request, res: Response): Promise<void> {
+        try {
+            const { submissionIds } = req.body;
+
+            if (!submissionIds || !Array.isArray(submissionIds) || submissionIds.length === 0) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Submission IDs array is required',
+                });
+                return;
+            }
+
+            const deletedCount = await this.submissionService.bulkDelete(submissionIds);
+
+            res.status(200).json({
+                success: true,
+                message: `${deletedCount} submission(s) deleted successfully`,
+                data: {
+                    deletedCount,
+                    deletedAt: new Date().toISOString(),
+                },
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Failed to delete submissions',
+                error: (error as Error).message,
+            });
+        }
+    }
+
+    /**
+     * POST /api/submissions/bulk/spam
+     * Mark submissions as spam (protected)
+     */
+    async markSubmissionsAsSpam(req: Request, res: Response): Promise<void> {
+        try {
+            const { submissionIds } = req.body;
+
+            if (!submissionIds || !Array.isArray(submissionIds) || submissionIds.length === 0) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Submission IDs array is required',
+                });
+                return;
+            }
+
+            const updatedCount = await this.submissionService.markAsSpam(submissionIds);
+
+            res.status(200).json({
+                success: true,
+                message: `${updatedCount} submission(s) marked as spam successfully`,
+                data: {
+                    updatedCount,
+                    updatedAt: new Date().toISOString(),
+                },
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Failed to mark submissions as spam',
+                error: (error as Error).message,
+            });
+        }
+    }
+
+    /**
      * PUT /api/submissions/:id
      * Update a submission status (protected)
      */
