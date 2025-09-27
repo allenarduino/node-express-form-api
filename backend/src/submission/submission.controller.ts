@@ -99,40 +99,61 @@ export class SubmissionController {
             // Queue background jobs for notifications
             await this.queueBackgroundJobs(submission, endpointSlug);
 
-            res.status(201).json({
-                success: true,
-                message: 'Form submitted successfully',
-                data: {
-                    id: submission.id,
-                    status: submission.status,
-                    submittedAt: submission.createdAt,
-                },
-            });
+            // Use the isHtmlForm variable already declared above
+
+            if (isHtmlForm) {
+                // Get form details to check for redirect URL
+                const formRepo = new FormRepository();
+                const form = await formRepo.findByEndpointSlug(endpointSlug);
+
+                // Use custom redirect URL or default success page
+                const redirectUrl = (form?.settings as any)?.redirectUrl || 'http://localhost:5173/success.html';
+
+                return res.redirect(redirectUrl);
+            } else {
+                // JSON response for API calls
+                res.status(201).json({
+                    success: true,
+                    message: 'Form submitted successfully',
+                    data: {
+                        id: submission.id,
+                        status: submission.status,
+                        submittedAt: submission.createdAt,
+                    },
+                });
+            }
         } catch (error) {
             const errorMessage = (error as Error).message;
+            const isHtmlForm = req.get('content-type')?.includes('application/x-www-form-urlencoded');
 
-            // Handle specific error types
-            if (errorMessage.includes('not found') || errorMessage.includes('not active')) {
-                res.status(404).json({
-                    success: false,
-                    message: errorMessage,
-                });
-            } else if (errorMessage.includes('Rate limit') || errorMessage.includes('Spam')) {
-                res.status(429).json({
-                    success: false,
-                    message: errorMessage,
-                });
-            } else if (errorMessage.includes('required') || errorMessage.includes('must be')) {
-                res.status(400).json({
-                    success: false,
-                    message: errorMessage,
-                });
+            if (isHtmlForm) {
+                // For HTML forms, redirect to error page with error message
+                const errorPageUrl = `http://localhost:5173/error.html?message=${encodeURIComponent(errorMessage)}`;
+                return res.redirect(errorPageUrl);
             } else {
-                res.status(500).json({
-                    success: false,
-                    message: 'Failed to submit form',
-                    error: errorMessage,
-                });
+                // JSON responses for API calls
+                if (errorMessage.includes('not found') || errorMessage.includes('not active')) {
+                    res.status(404).json({
+                        success: false,
+                        message: errorMessage,
+                    });
+                } else if (errorMessage.includes('Rate limit') || errorMessage.includes('Spam')) {
+                    res.status(429).json({
+                        success: false,
+                        message: errorMessage,
+                    });
+                } else if (errorMessage.includes('required') || errorMessage.includes('must be')) {
+                    res.status(400).json({
+                        success: false,
+                        message: errorMessage,
+                    });
+                } else {
+                    res.status(500).json({
+                        success: false,
+                        message: 'Failed to submit form',
+                        error: errorMessage,
+                    });
+                }
             }
         }
     }

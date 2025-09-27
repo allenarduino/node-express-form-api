@@ -76,6 +76,7 @@ export function FormDetailsPage() {
     const [isAllSelected, setIsAllSelected] = useState(false);
     const [notificationEmails, setNotificationEmails] = useState<string[]>([]);
     const [newEmail, setNewEmail] = useState('');
+    const [redirectUrl, setRedirectUrl] = useState('');
 
     // Fetch submissions data
     const { data: submissionsData, loading: submissionsLoading, error: submissionsError, refetch: refetchSubmissions } = useSubmissions(id || '', 1, 10);
@@ -92,7 +93,8 @@ export function FormDetailsPage() {
             editData.name !== form.name ||
             editData.description !== (form.description || '') ||
             editData.isActive !== form.isActive ||
-            JSON.stringify(notificationEmails.sort()) !== JSON.stringify(currentEmails.sort())
+            JSON.stringify(notificationEmails.sort()) !== JSON.stringify(currentEmails.sort()) ||
+            redirectUrl !== (form.settings?.redirectUrl || '')
         );
     };
 
@@ -145,6 +147,14 @@ export function FormDetailsPage() {
                             // Add current user's email as default if no emails are configured
                             const defaultEmails = user?.email ? [user.email] : [];
                             setNotificationEmails(defaultEmails);
+                        }
+
+                        // Initialize redirect URL from form settings
+                        if (formData.settings?.redirectUrl) {
+                            setRedirectUrl(formData.settings.redirectUrl);
+                        } else {
+                            // Set default redirect URL if none configured
+                            setRedirectUrl('http://localhost:5173/success.html');
                         }
                         // Fetch real statistics
                         await fetchFormStatistics(id);
@@ -342,6 +352,7 @@ export function FormDetailsPage() {
                 settings: {
                     ...form.settings,
                     notificationEmail: notificationEmails.length > 0 ? notificationEmails.join(',') : undefined,
+                    redirectUrl: redirectUrl || undefined,
                 }
             };
 
@@ -1019,6 +1030,31 @@ form.addEventListener('submit', async (e) => {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Redirect Settings */}
+            <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Redirect Settings</h3>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Success Redirect URL <span className="text-gray-400">(Optional)</span>
+                        </label>
+                        <input
+                            type="url"
+                            placeholder="http://localhost:5173/success.html"
+                            value={redirectUrl}
+                            onChange={(e) => {
+                                setRedirectUrl(e.target.value);
+                                setHasChanges(true);
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
+                        />
+                        <p className="mt-1 text-sm text-gray-500">
+                            URL to redirect users after successful form submission. If not set, users will see a default success page.
+                        </p>
                     </div>
                 </div>
             </div>
