@@ -77,10 +77,15 @@ export function FormDetailsPage() {
     const [notificationEmails, setNotificationEmails] = useState<string[]>([]);
     const [newEmail, setNewEmail] = useState('');
     const [redirectUrl, setRedirectUrl] = useState('');
+    // Spam protection state management
+    // This tracks the security settings that will be saved to the backend
+    // enabled: Master toggle for all spam protection (CAPTCHA, honeypot, rate limiting)
+    // honeypot: Whether to add hidden field to catch bots
+    // rateLimit: Maximum submissions per minute per IP address
     const [spamProtection, setSpamProtection] = useState({
-        enabled: false,
-        honeypot: false,
-        rateLimit: 10
+        enabled: false,    // Master spam protection toggle
+        honeypot: false,   // Honeypot field protection
+        rateLimit: 10      // Rate limiting (submissions per minute)
     });
 
     // Fetch submissions data
@@ -167,15 +172,19 @@ export function FormDetailsPage() {
                             setRedirectUrl('http://localhost:5173/success.html');
                         }
 
-                        // Initialize spam protection from form settings
+                        // Initialize spam protection settings from form data
+                        // This loads the current spam protection configuration from the backend
                         if (formData.settings?.spamProtection) {
+                            // Load existing spam protection settings
+                            console.log('Loading existing spam protection settings:', formData.settings.spamProtection);
                             setSpamProtection(formData.settings.spamProtection);
                         } else {
-                            // Set default spam protection settings
+                            // Set default spam protection settings if none exist
+                            console.log('Setting default spam protection settings');
                             setSpamProtection({
-                                enabled: false,
-                                honeypot: false,
-                                rateLimit: 10
+                                enabled: false,    // CAPTCHA disabled by default
+                                honeypot: false,   // Honeypot disabled by default
+                                rateLimit: 10      // Default rate limit: 10 submissions per minute
                             });
                         }
                         // Fetch real statistics
@@ -375,6 +384,8 @@ export function FormDetailsPage() {
                     ...form.settings,
                     notificationEmail: notificationEmails.length > 0 ? notificationEmails.join(',') : undefined,
                     redirectUrl: redirectUrl || undefined,
+                    // Save spam protection settings to backend
+                    // This is what the backend uses to determine which security checks to run
                     spamProtection: spamProtection,
                 }
             };
@@ -1086,19 +1097,28 @@ form.addEventListener('submit', async (e) => {
             <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Security Settings</h3>
                 <div className="space-y-6">
+                    {/* CAPTCHA Toggle - Master switch for all spam protection */}
                     <div className="flex items-center justify-between">
                         <div>
                             <div className="text-sm font-medium text-gray-900">Enable CAPTCHA</div>
-                            <div className="text-sm text-gray-500">Add CAPTCHA verification to prevent bots</div>
+                            <div className="text-sm text-gray-500">
+                                Enable Google reCAPTCHA "I'm not a robot" verification
+                                {spamProtection.enabled && (
+                                    <span className="text-green-600 font-medium"> • Active</span>
+                                )}
+                            </div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={spamProtection.enabled}
                                 onChange={(e) => {
+                                    // Toggle the master CAPTCHA switch
+                                    // This enables/disables all spam protection features
+                                    console.log('CAPTCHA toggle changed:', e.target.checked);
                                     setSpamProtection(prev => ({
                                         ...prev,
-                                        enabled: e.target.checked
+                                        enabled: e.target.checked // Master toggle for spam protection
                                     }));
                                 }}
                                 className="sr-only peer"

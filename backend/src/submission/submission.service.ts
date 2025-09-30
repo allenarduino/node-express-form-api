@@ -239,39 +239,69 @@ export class SubmissionService {
 
     /**
      * Check for spam protection using comprehensive spam protection service
-     * @param data - Submission data
-     * @param ip - Client IP address
-     * @param formId - Form ID
-     * @param settings - Form settings (optional)
+     * This is where CAPTCHA, honeypot, and rate limiting are enforced
+     * 
+     * @param data - Submission data (contains form fields + CAPTCHA token)
+     * @param ip - Client IP address (for rate limiting and CAPTCHA verification)
+     * @param formId - Form ID (for rate limiting per form)
+     * @param settings - Form settings (contains spam protection configuration)
      */
     private async checkSpamProtection(data: CreateSubmissionInput, ip: string, formId: string, settings?: FormSettings): Promise<void> {
+        // Get spam protection settings from form configuration
+        // This comes from the dashboard where user toggled CAPTCHA/honeypot on/off
         const spamProtection = settings?.spamProtection;
 
+        // If spam protection is disabled in form settings, skip all checks
         if (!spamProtection?.enabled) {
+            console.log('Spam protection disabled for this form');
             return;
         }
 
-        // Prepare spam protection configuration
+        console.log('Spam protection enabled, checking submission...');
+
+        // Prepare spam protection configuration based on form settings
         const spamConfig: SpamProtectionConfig = {
+            // Honeypot: Add honeypot field validation if enabled in dashboard
             ...(spamProtection.honeypot && { honeypotField: 'honeypot' }),
+
+            // CAPTCHA: Enable reCAPTCHA verification if:
+            // 1. User enabled CAPTCHA in dashboard (spamProtection.enabled = true)
+            // 2. Backend has reCAPTCHA secret key configured
             enableRecaptcha: spamProtection.enabled && !!process.env.RECAPTCHA_SECRET_KEY,
+
+            // Add secret key for Google reCAPTCHA verification
             ...(process.env.RECAPTCHA_SECRET_KEY && { recaptchaSecret: process.env.RECAPTCHA_SECRET_KEY }),
-            rateLimitPerIp: spamProtection.rateLimit || 10,
-            rateLimitPerForm: 50, // Default form limit
-            rateLimitWindow: 60, // 1 hour
+
+            // Rate limiting: Use user-configured rate limit from dashboard
+            rateLimitPerIp: spamProtection.rateLimit || 10, // submissions per minute per IP
+
+            // Default form limits
+            rateLimitPerForm: 50, // submissions per form per hour
+            rateLimitWindow: 60,  // time window in minutes
         };
 
+        console.log('Spam protection config:', {
+            honeypot: spamProtection.honeypot,
+            captcha: spamConfig.enableRecaptcha,
+            rateLimit: spamConfig.rateLimitPerIp
+        });
+
         // Perform comprehensive spam check
+        // This will check honeypot, CAPTCHA, and rate limiting
         const spamCheck = await this.spamProtectionService.performSpamCheck(
-            data.formData,
-            ip,
-            formId,
-            spamConfig
+            data.formData, // Contains all form fields including 'g-recaptcha-response'
+            ip,            // Client IP for rate limiting and CAPTCHA verification
+            formId,        // Form ID for per-form rate limiting
+            spamConfig     // Configuration from dashboard settings
         );
 
+        // If any spam protection check fails, reject the submission
         if (!spamCheck.isValid) {
+            console.log('Spam protection failed:', spamCheck.reason);
             throw new Error(`Spam protection: ${spamCheck.reason}`);
         }
+
+        console.log('Spam protection passed, submission is valid');
     }
 
     /**
